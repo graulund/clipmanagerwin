@@ -17,6 +17,8 @@ namespace Clip_Manager.ViewModel
 		private ClipManagerEngine engine;
 		readonly CachedSound clip = new CachedSound("C:\\Users\\augr\\Desktop\\alting-ved-det-er-cool.wav");
 		readonly CachedSound clip2 = new CachedSound("C:\\Users\\augr\\Desktop\\esport-dreng-kort.mp3");
+		readonly CachedSound clip3 = new CachedSound("C:\\Users\\augr\\Desktop\\creme-sprøjtes-ud-start-slut.wav");
+		readonly CachedSound clip4 = new CachedSound("C:\\Users\\augr\\Desktop\\go-morgen-clip.mp3");
 
 		private Timer timer;
 
@@ -40,7 +42,7 @@ namespace Clip_Manager.ViewModel
 		public ClipManagerViewModel()
 		{
 			ToggleClipCommand = new DelegateCommand(ToggleClip);
-			timer = new Timer(100);
+			timer = new Timer(20);
 			timer.Elapsed += Timer_Elapsed;
 			engine = new ClipManagerEngine();
 			engine.ClipsChanged += Engine_ClipsChanged;
@@ -48,18 +50,19 @@ namespace Clip_Manager.ViewModel
 			engine.ClipStoppedPlaying += Engine_ClipStoppedPlaying;
 			engine.SetClip(0, clip);
 			engine.SetClip(1, clip2);
+			engine.SetClip(2, clip3);
+			engine.SetClip(3, clip4);
 		}
 
 		public ClipViewModel TransformClip(CachedSound clip, int index)
 		{
-			var duration = clip != null ? clip.TotalTime : TimeSpan.Zero;
 			return new ClipViewModel
 			{
 				Number = 1 + index,
 				HasValue = clip != null,
 				FileName = clip != null ? Path.GetFileName(clip.FileName) : null,
 				IsPlaying = engine.CurrentlyPlayingIndex != null && engine.CurrentlyPlayingIndex.Value == index,
-				TimeString = duration.ToString("m\\:ss")
+				TimeString = GetClipDurationString(index)
 			};
 		}
 
@@ -86,19 +89,40 @@ namespace Clip_Manager.ViewModel
 			catch (Exception) { }
 		}
 
-		private void Engine_ClipsChanged(object sender, EventArgs e)
+		public string GetClipDurationString(int index)
 		{
-			TransformClips();
+			var duration = TimeSpan.Zero;
+
+			if (engine.Clips.ContainsKey(index))
+			{
+				var clip = engine.Clips[index];
+				if (clip != null)
+				{
+					duration = GetRoundedTimeSpan(clip.TotalTime);
+				}
+			}
+
+			if (duration != TimeSpan.Zero)
+			{
+				return duration.ToString("m\\:ss");
+			}
+
+			return "";
 		}
 
-		private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+		private TimeSpan GetRoundedTimeSpan(TimeSpan timeSpan)
+		{
+			return new RoundedTimeSpan(timeSpan.Ticks, 0).TimeSpan;
+		}
+
+		private void UpdatePlayingClipView()
 		{
 			var currentTime = engine.CurrentlyPlayingSampleProvider?.CurrentTime;
 			var duration = engine.CurrentlyPlayingClip?.TotalTime;
 
 			if (currentTime != null && duration != null && engine.CurrentlyPlayingIndex != null)
 			{
-				var rest = currentTime.Value - duration.Value;
+				var rest = GetRoundedTimeSpan(duration.Value - currentTime.Value);
 				var warning = rest.TotalSeconds <= WARNING_SECONDS;
 				var ratio = currentTime.Value.TotalMilliseconds / duration.Value.TotalMilliseconds;
 				var index = engine.CurrentlyPlayingIndex.Value;
@@ -111,27 +135,48 @@ namespace Clip_Manager.ViewModel
 				clipView.PlayRatio = ratio;
 				clipView.IsWarning = warning;
 
-				Console.WriteLine(
+				/*Console.WriteLine(
 					DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff tt") +
 					": Timer elapsed. Current index: {0}, Remaining: {1}, Ratio: {2}, Warning: {3}",
 					index,
 					restString,
 					ratio,
 					warning
-				);
+				);*/
 			}
+		}
+
+		private void Engine_ClipsChanged(object sender, EventArgs e)
+		{
+			TransformClips();
+		}
+
+		private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+		{
+			UpdatePlayingClipView();
 		}
 
 		private void Engine_ClipStartedPlaying(object sender, ClipEventArgs e)
 		{
-			Console.WriteLine("Clip started playing: {0}", e.Index);
+			Console.WriteLine(
+				DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff tt") +
+				": Clip started playing: {0}",
+				e.Index
+			);
 			timer.Start();
+			UpdatePlayingClipView();
 		}
 
 		private void Engine_ClipStoppedPlaying(object sender, ClipEventArgs e)
 		{
-			Console.WriteLine("Clip stopped playing: {0}", e.Index);
+			var index = e.Index;
+			Console.WriteLine("Clip stopped playing: {0}", index);
 			timer.Stop();
+			var clipView = Clips[index];
+			clipView.IsPlaying = false;
+			clipView.IsWarning = false;
+			clipView.PlayRatio = 0.0;
+			clipView.TimeString = GetClipDurationString(index);
 		}
 
 		public void Dispose()

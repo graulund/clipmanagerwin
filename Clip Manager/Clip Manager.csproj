@@ -64,6 +64,7 @@
     <Compile Include="Model\ClipManagerEngine.cs" />
     <Compile Include="Model\CachedSound.cs" />
     <Compile Include="Model\CachedSoundSampleProvider.cs" />
+    <Compile Include="Model\RoundedTimeSpan.cs" />
     <Compile Include="ViewModel\ClipManagerViewModel.cs" />
     <Compile Include="ViewModel\ClipViewModel.cs" />
     <Compile Include="ViewModel\DelegateCommand.cs" />

@@ -17,6 +17,7 @@ namespace Clip_Manager.Model
 			using (var audioFileReader = new AudioFileReader(audioFileName))
 			{
 				// TODO: could add resampling in here if required
+				// TODO: Throw if too long
 				WaveFormat = audioFileReader.WaveFormat;
 				FileName = audioFileName;
 				TotalTime = audioFileReader.TotalTime;

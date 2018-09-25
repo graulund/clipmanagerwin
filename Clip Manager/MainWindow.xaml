@@ -9,20 +9,53 @@
 		<DataTemplate x:Key="clipTemplate">
 			<Grid>
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition />
-					<ColumnDefinition />
+					<ColumnDefinition Width="1*" />
+					<ColumnDefinition Width="5*" />
 				</Grid.ColumnDefinitions>
 				<Grid.RowDefinitions>
 					<RowDefinition />
 					<RowDefinition />
 				</Grid.RowDefinitions>
-				<Label Content="{Binding Number}" Grid.Row="0" Grid.Column="0" FontWeight="Bold" />
-				<Label Content="{Binding FileName}" Grid.Row="0" Grid.Column="1" />
-				<Label Content="{Binding TimeString}" Grid.Row="1" Grid.Column="1" />
+				<ProgressBar
+					Grid.Row="0"
+					Grid.Column="0"
+					Grid.ColumnSpan="2"
+					Grid.RowSpan="2"
+					Minimum="0"
+					Maximum="1"
+					Value="{Binding PlayRatio}">
+					<ProgressBar.Style>
+						<Style TargetType="ProgressBar">
+							<Setter Property="Foreground" Value="White" />
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding IsWarning}" Value="True">
+									<Setter Property="Foreground" Value="Yellow" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</ProgressBar.Style>
+				</ProgressBar>
+				<Label
+					Content="{Binding Number}"
+					Grid.Row="0"
+					Grid.Column="0"
+					Grid.RowSpan="2"
+					FontWeight="Light"
+					FontSize="36" />
+				<Label
+					Content="{Binding FileName}"
+					Grid.Row="0"
+					Grid.Column="1" />
+				<Label
+					Content="{Binding TimeString}"
+					Grid.Row="1"
+					Grid.Column="1"
+					FontSize="18"
+					HorizontalAlignment="Right" />
 			</Grid>
 		</DataTemplate>
 		<ItemsPanelTemplate x:Key="clipStackTemplate">
-			<StackPanel Orientation="Horizontal" />
+			<UniformGrid Rows="1" />
 		</ItemsPanelTemplate>
 	</Window.Resources>
 	<DockPanel>
