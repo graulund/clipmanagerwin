@@ -14,6 +14,8 @@ namespace Clip_Manager.ViewModel
 		public const double WARNING_SECONDS = 10.0;
 		public ICommand ToggleClipCommand { get; }
 
+		public bool IsDirty { get; set; }
+
 		private ClipManagerEngine engine;
 		readonly CachedSound clip = new CachedSound("C:\\Users\\augr\\Desktop\\alting-ved-det-er-cool.wav");
 		readonly CachedSound clip2 = new CachedSound("C:\\Users\\augr\\Desktop\\esport-dreng-kort.mp3");
@@ -42,6 +44,7 @@ namespace Clip_Manager.ViewModel
 		public ClipManagerViewModel()
 		{
 			ToggleClipCommand = new DelegateCommand(ToggleClip);
+			IsDirty = false;
 			timer = new Timer(20);
 			timer.Elapsed += Timer_Elapsed;
 			engine = new ClipManagerEngine();
@@ -54,28 +57,61 @@ namespace Clip_Manager.ViewModel
 			engine.SetClip(3, clip4);
 		}
 
-		public ClipViewModel TransformClip(CachedSound clip, int index)
+		public ClipViewModel TransformClip(ClipViewModel existingClip, CachedSound clip, int index)
 		{
-			return new ClipViewModel
+			var isPlaying = engine.CurrentlyPlayingIndex != null && engine.CurrentlyPlayingIndex.Value == index;
+
+			if (existingClip != null) {
+				existingClip.Number = 1 + index;
+				existingClip.HasValue = clip != null;
+				existingClip.FileName = clip != null ? Path.GetFileName(clip.FileName) : null;
+				existingClip.IsPlaying = isPlaying;
+				existingClip.IsNotPlaying = !isPlaying;
+
+				if (!isPlaying)
+				{
+					existingClip.TimeString = GetClipDurationString(index);
+				}
+
+				return existingClip;
+			}
+			else
 			{
-				Number = 1 + index,
-				HasValue = clip != null,
-				FileName = clip != null ? Path.GetFileName(clip.FileName) : null,
-				IsPlaying = engine.CurrentlyPlayingIndex != null && engine.CurrentlyPlayingIndex.Value == index,
-				TimeString = GetClipDurationString(index)
-			};
+				return new ClipViewModel
+				{
+					Number = 1 + index,
+					HasValue = clip != null,
+					FileName = clip != null ? Path.GetFileName(clip.FileName) : null,
+					IsPlaying = isPlaying,
+					IsNotPlaying = !isPlaying,
+					TimeString = GetClipDurationString(index)
+				};
+			}
 		}
 
 		public void TransformClips()
 		{
-			var clips = new List<ClipViewModel>();
+			var clips = Clips != null ? Clips : new List<ClipViewModel>();
 
 			for (var i = 0; i < MAX_CLIPS; i++)
 			{
-				clips.Add(TransformClip(engine.Clips.ContainsKey(i) ? engine.Clips[i] : null, i));
+				if (clips.Count > i + 1)
+				{
+					clips[i] = TransformClip(clips[i], engine.Clips.ContainsKey(i) ? engine.Clips[i] : null, i);
+				}
+
+				else
+				{
+					clips.Add(TransformClip(null, engine.Clips.ContainsKey(i) ? engine.Clips[i] : null, i));
+				}
 			}
 
 			Clips = clips;
+		}
+
+		public void SetClip(int number, string fileName)
+		{
+			engine.SetClip(number - 1, new CachedSound(fileName));
 		}
 
 		public void ToggleClip(object data)
@@ -131,6 +167,7 @@ namespace Clip_Manager.ViewModel
 				var clipView = Clips[index];
 
 				clipView.IsPlaying = true;
+				clipView.IsNotPlaying = false;
 				clipView.TimeString = restString;
 				clipView.PlayRatio = ratio;
 				clipView.IsWarning = warning;
@@ -174,6 +211,7 @@ namespace Clip_Manager.ViewModel
 			timer.Stop();
 			var clipView = Clips[index];
 			clipView.IsPlaying = false;
+			clipView.IsNotPlaying = true;
 			clipView.IsWarning = false;
 			clipView.PlayRatio = 0.0;
 			clipView.TimeString = GetClipDurationString(index);

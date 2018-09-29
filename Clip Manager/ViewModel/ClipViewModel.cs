@@ -39,6 +39,13 @@ namespace Clip_Manager.ViewModel
 			set => SetProperty(ref _isPlaying, value);
 		}
 
+		private bool _isNotPlaying;
+		public bool IsNotPlaying
+		{
+			get => _isNotPlaying;
+			set => SetProperty(ref _isNotPlaying, value);
+		}
+
 		private double _playRatio;
 		public double PlayRatio
 		{

@@ -23,9 +23,12 @@
 					Grid.RowSpan="2"
 					Minimum="0"
 					Maximum="1"
-					Value="{Binding PlayRatio}">
+					Value="{Binding PlayRatio}"
+					AllowDrop="{Binding IsNotPlaying}"
+					Drop="ProgressBar_Drop">
 					<ProgressBar.Style>
 						<Style TargetType="ProgressBar">
+							<!--<Setter Property="BorderThickness" Value="0" />-->
 							<Setter Property="Foreground" Value="White" />
 							<Style.Triggers>
 								<DataTrigger Binding="{Binding IsWarning}" Value="True">
@@ -41,17 +44,24 @@
 					Grid.Column="0"
 					Grid.RowSpan="2"
 					FontWeight="Light"
-					FontSize="36" />
+					FontSize="36"
+					AllowDrop="{Binding IsNotPlaying}"
+					Drop="ProgressBar_Drop" />
 				<Label
 					Content="{Binding FileName}"
 					Grid.Row="0"
-					Grid.Column="1" />
+					Grid.Column="1"
+					AllowDrop="{Binding IsNotPlaying}"
+					Drop="ProgressBar_Drop" />
 				<Label
 					Content="{Binding TimeString}"
 					Grid.Row="1"
 					Grid.Column="1"
 					FontSize="18"
-					HorizontalAlignment="Right" />
+					HorizontalAlignment="Right"
+					VerticalAlignment="Bottom"
+					AllowDrop="{Binding IsNotPlaying}"
+					Drop="ProgressBar_Drop" />
 			</Grid>
 		</DataTemplate>
 		<ItemsPanelTemplate x:Key="clipStackTemplate">

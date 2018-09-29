@@ -1,4 +1,8 @@
-﻿using System.Windows;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using Clip_Manager.ViewModel;
 
@@ -37,9 +41,66 @@ namespace Clip_Manager
 			}
 		}
 
-		private void Button_Click(object sender, RoutedEventArgs e)
+		private void ProgressBar_Drop(object sender, DragEventArgs e)
 		{
-			//var viewModel = (ClipViewModel)DataContext;
+			if (e.Data.GetDataPresent(DataFormats.FileDrop))
+			{
+				var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+				if (files.Length == 1)
+				{
+					var file = files[0];
+					Console.WriteLine("Dropped: {0}", file);
+					var extension = Path.GetExtension(file).ToLowerInvariant();
+
+					if (
+						extension == ".wav" ||
+						extension == ".mp3" ||
+						extension == ".aiff" ||
+						extension == ".aac"
+					)
+					{
+						Console.WriteLine("It's an audio file! Yay!");
+
+						// Time to find the number you dragged on to
+						// Is there really not a better way to do this?
+
+						var parent = ((Control)sender).Parent;
+
+						if (parent is Grid)
+						{
+							var grid = (Grid)parent;
+							foreach (var item in grid.Children)
+							{
+								if (item is Label)
+								{
+									var label = (Label)item;
+									if (label.Content is int)
+									{
+										var number = (int)label.Content;
+										var manager = (ClipManagerViewModel)DataContext;
+										manager.SetClip(number, file);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
 		}
+
+		/*
+        private void OnOpenFileClick(object sender, EventArgs e)
+        {
+            var openFileDialog = new OpenFileDialog();
+            string allExtensions = "*.wav;*.aiff;*.mp3;*.aac";
+            openFileDialog.Filter = String.Format("All Supported Files|{0}|All Files (*.*)|*.*", allExtensions);
+            openFileDialog.FilterIndex = 1;
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                fileName = openFileDialog.FileName;
+            }
+        }
+		*/
 	}
 }
