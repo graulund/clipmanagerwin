@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
@@ -16,12 +17,19 @@ namespace Clip_Manager.Model
 		public CachedSoundSampleProvider CurrentlyPlayingSampleProvider = null;
 		private int? startIndexAfterStopping = null;
 
+		public string ClipListFileName { get; set; }
+		public bool ClipListIsDirty { get; set; }
+
 		public event EventHandler ClipsChanged;
 		public event EventHandler<ClipEventArgs> ClipStartedPlaying;
 		public event EventHandler<ClipEventArgs> ClipStoppedPlaying;
+		public event EventHandler ClipListChanged;
 
 		public ClipManagerEngine()
 		{
+			Clips = new Dictionary<int, CachedSound>(NUM_CLIPS);
+			ClipListFileName = null;
+			ClipListIsDirty = false;
 			outputDevice = new WaveOutEvent();
 			outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
 		}
@@ -30,11 +38,21 @@ namespace Clip_Manager.Model
 		{
 			if (Clips == null)
 			{
-				Clips = new Dictionary<int, CachedSound>();
+				Clips = new Dictionary<int, CachedSound>(NUM_CLIPS);
 			}
 
 			Clips.Add(index, clip);
+			ClipListIsDirty = true;
 			OnClipsChanged();
+			OnClipListChanged();
+		}
+
+		public void ClearClips() {
+			Clips = new Dictionary<int, CachedSound>(NUM_CLIPS);
+			ClipListFileName = null;
+			ClipListIsDirty = false;
+			OnClipsChanged();
+			OnClipListChanged();
 		}
 
 		public void PlaySound(int index)
@@ -89,6 +107,21 @@ namespace Clip_Manager.Model
 			outputDevice?.Stop();
 		}
 
+		public void LoadClipsFromFile(string fileName) {
+			Clips = ClipFileHandler.ReadClipsFile(fileName);
+			ClipListFileName = fileName;
+			ClipListIsDirty = false;
+			OnClipsChanged();
+			OnClipListChanged();
+		}
+
+		public void SaveClipsToFile(string fileName) {
+			ClipFileHandler.WriteClipsFile(Clips, fileName);
+			ClipListFileName = fileName;
+			ClipListIsDirty = false;
+			OnClipListChanged();
+		}
+
 		private void OutputDevice_PlaybackStopped(object sender, StoppedEventArgs e)
 		{
 			Console.WriteLine(DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff tt") + ": Stopped");
@@ -125,6 +158,11 @@ namespace Clip_Manager.Model
 		{
 			var args = new ClipEventArgs { Index = index };
 			ClipStoppedPlaying?.Invoke(this, args);
+		}
+
+		protected virtual void OnClipListChanged()
+		{
+			ClipListChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		public void Dispose()

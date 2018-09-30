@@ -61,6 +61,7 @@
     <Compile Include="ClipControl.xaml.cs">
       <DependentUpon>ClipControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Model\ClipFileHandler.cs" />
     <Compile Include="Model\ClipManagerEngine.cs" />
     <Compile Include="Model\CachedSound.cs" />
     <Compile Include="Model\CachedSoundSampleProvider.cs" />

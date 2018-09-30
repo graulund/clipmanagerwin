@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Clip_Manager.ViewModel;
+using Microsoft.Win32;
 
 namespace Clip_Manager
 {
@@ -13,6 +14,8 @@ namespace Clip_Manager
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		const string CloseWarning = "You have unsaved changes. Save them before continuing?";
+
 		public MainWindow()
 		{
 			var viewModel = new ClipManagerViewModel();
@@ -60,8 +63,6 @@ namespace Clip_Manager
 						extension == ".aac"
 					)
 					{
-						Console.WriteLine("It's an audio file! Yay!");
-
 						// Time to find the number you dragged on to
 						// Is there really not a better way to do this?
 
@@ -85,6 +86,95 @@ namespace Clip_Manager
 							}
 						}
 					}
+				}
+			}
+		}
+
+		private void save() {
+			var manager = (ClipManagerViewModel)DataContext;
+			
+			if (manager.FileName != null) {
+				manager.SaveClipsToFile(manager.FileName);
+			}
+
+			else {
+				saveAs();
+			}
+		}
+
+		private void saveAs() {
+			var dialog = new SaveFileDialog();
+			dialog.DefaultExt = "clips";
+			dialog.Filter = "Clip Lists (*.clips)|*.clips";
+
+			if (dialog.ShowDialog() == true) {
+				var manager = (ClipManagerViewModel)DataContext;
+				manager.SaveClipsToFile(dialog.FileName);
+			}
+		}
+
+		private void saveClipListAs_Click(object sender, RoutedEventArgs e) {
+			saveAs();
+		}
+
+		private void openClipList_Click(object sender, RoutedEventArgs e) {
+			var dialog = new OpenFileDialog();
+			dialog.DefaultExt = "clips";
+			dialog.Filter = "Clip Lists (*.clips)|*.clips";
+
+			if (dialog.ShowDialog() == true) {
+				var manager = (ClipManagerViewModel)DataContext;
+				manager.LoadClipsFromFile(dialog.FileName);
+			}
+		}
+
+		private void newClipList_Click(object sender, RoutedEventArgs e) {
+			var manager = (ClipManagerViewModel)DataContext;
+
+			if (!manager.IsDirty) {
+				manager.ClearClips();
+			}
+
+			else {
+				var result = MessageBox.Show(CloseWarning, "Clips", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+
+				switch (result) {
+					case MessageBoxResult.Yes:
+						save();
+						manager.ClearClips();
+						break;
+					case MessageBoxResult.No:
+						manager.ClearClips();
+						break;
+				}
+			}
+		}
+
+		private void saveClipList_Click(object sender, RoutedEventArgs e) {
+			save();
+		}
+
+		private void openClipFolder_Click(object sender, RoutedEventArgs e) {
+			// TODO
+		}
+
+		private void exit_Click(object sender, RoutedEventArgs e) {
+			Application.Current.Shutdown();
+		}
+
+		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
+			var manager = (ClipManagerViewModel)DataContext;
+
+			if (manager.IsDirty) {
+				var result = MessageBox.Show(CloseWarning, "Clips", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+
+				switch (result) {
+					case MessageBoxResult.Yes:
+						save();
+						break;
+					case MessageBoxResult.Cancel:
+						e.Cancel = true;
+						break;
 				}
 			}
 		}

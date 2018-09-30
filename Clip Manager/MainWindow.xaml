@@ -1,10 +1,13 @@
 ﻿<Window x:Class="Clip_Manager.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d"
-        Title="Clips" Height="200" Width="800">
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		mc:Ignorable="d"
+		Title="{Binding MainWindowTitle}"
+		Height="200"
+		Width="800"
+		Closing="Window_Closing">
 	<Window.Resources>
 		<DataTemplate x:Key="clipTemplate">
 			<Grid>
@@ -71,14 +74,38 @@
 	<DockPanel>
 		<Menu DockPanel.Dock="Top">
 			<MenuItem Header="_File">
-				<MenuItem Header="_New Clip List" InputGestureText="Ctrl+N" />
-				<MenuItem Header="_Open Clip List…" InputGestureText="Ctrl+O" />
-				<MenuItem Header="Open Clip List From _Folder…" InputGestureText="Ctrl+I" />
-				<MenuItem Header="_Save Clip List" InputGestureText="Ctrl+S" />
-				<MenuItem Header="S_ave Clip List As…" InputGestureText="Ctrl+Shift+S" />
+				<MenuItem
+					Header="_New Clip List"
+					InputGestureText="Ctrl+N"
+					x:Name="newClipList"
+					Click="newClipList_Click" />
+				<MenuItem
+					Header="_Open Clip List…"
+					InputGestureText="Ctrl+O"
+					x:Name="openClipList"
+					Click="openClipList_Click" />
+				<MenuItem
+					Header="Open Clip List From _Folder…"
+					InputGestureText="Ctrl+I"
+					x:Name="openClipFolder"
+					Click="openClipFolder_Click" />
+				<MenuItem
+					Header="_Save Clip List"
+					InputGestureText="Ctrl+S"
+					x:Name="saveClipList"
+					Click="saveClipList_Click" />
+				<MenuItem
+					Header="S_ave Clip List As…"
+					InputGestureText="Ctrl+Shift+S"
+					x:Name="saveClipListAs"
+					Click="saveClipListAs_Click" />
 				<Separator />
 				<!-- TODO: Open recent -->
-				<MenuItem Header="_Exit" InputGestureText="Alt+F4" />
+				<MenuItem
+					Header="_Exit"
+					InputGestureText="Alt+F4"
+					x:Name="exit"
+					Click="exit_Click" />
 			</MenuItem>
 		</Menu>
 		<Grid>

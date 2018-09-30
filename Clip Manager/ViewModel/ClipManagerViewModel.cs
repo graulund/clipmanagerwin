@@ -14,13 +14,7 @@ namespace Clip_Manager.ViewModel
 		public const double WARNING_SECONDS = 10.0;
 		public ICommand ToggleClipCommand { get; }
 
-		public bool IsDirty { get; set; }
-
 		private ClipManagerEngine engine;
-		readonly CachedSound clip = new CachedSound("C:\\Users\\augr\\Desktop\\alting-ved-det-er-cool.wav");
-		readonly CachedSound clip2 = new CachedSound("C:\\Users\\augr\\Desktop\\esport-dreng-kort.mp3");
-		readonly CachedSound clip3 = new CachedSound("C:\\Users\\augr\\Desktop\\creme-sprøjtes-ud-start-slut.wav");
-		readonly CachedSound clip4 = new CachedSound("C:\\Users\\augr\\Desktop\\go-morgen-clip.mp3");
 
 		private Timer timer;
 
@@ -41,20 +35,27 @@ namespace Clip_Manager.ViewModel
 			get => Clips.Take(MAX_CLIPS / 2).ToList();
 		}
 
+		private string _mainWindowTitle;
+		public string MainWindowTitle {
+			get => _mainWindowTitle;
+			set => SetProperty(ref _mainWindowTitle, value);
+		}
+
+		public string FileName { get => engine.ClipListFileName; }
+		public bool IsDirty { get => engine.ClipListIsDirty; }
+
 		public ClipManagerViewModel()
 		{
 			ToggleClipCommand = new DelegateCommand(ToggleClip);
-			IsDirty = false;
 			timer = new Timer(20);
 			timer.Elapsed += Timer_Elapsed;
 			engine = new ClipManagerEngine();
+			TransformClips();
+			SetMainWindowTitle();
 			engine.ClipsChanged += Engine_ClipsChanged;
 			engine.ClipStartedPlaying += Engine_ClipStartedPlaying;
 			engine.ClipStoppedPlaying += Engine_ClipStoppedPlaying;
-			engine.SetClip(0, clip);
-			engine.SetClip(1, clip2);
-			engine.SetClip(2, clip3);
-			engine.SetClip(3, clip4);
+			engine.ClipListChanged += Engine_ClipListChanged;
 		}
 
 		public ClipViewModel TransformClip(ClipViewModel existingClip, CachedSound clip, int index)
@@ -109,6 +110,20 @@ namespace Clip_Manager.ViewModel
 			Clips = clips;
 		}
 
+		public void SetMainWindowTitle() {
+			if (engine.ClipListFileName != null) {
+				MainWindowTitle = string.Format(
+					"{0}{1} — Clips",
+					Path.GetFileName(engine.ClipListFileName),
+					engine.ClipListIsDirty ? "*" : ""
+				);
+			}
+
+			else {
+				MainWindowTitle = "Clips";
+			}
+		}
+
 		public void SetClip(int number, string fileName)
 		{
 			engine.SetClip(number - 1, new CachedSound(fileName));
@@ -123,6 +138,18 @@ namespace Clip_Manager.ViewModel
 			}
 
 			catch (Exception) { }
+		}
+
+		public void LoadClipsFromFile(string fileName) {
+			engine.LoadClipsFromFile(fileName);
+		}
+
+		public void SaveClipsToFile(string fileName) {
+			engine.SaveClipsToFile(fileName);
+		}
+
+		public void ClearClips() {
+			engine.ClearClips();
 		}
 
 		public string GetClipDurationString(int index)
@@ -215,6 +242,10 @@ namespace Clip_Manager.ViewModel
 			clipView.IsWarning = false;
 			clipView.PlayRatio = 0.0;
 			clipView.TimeString = GetClipDurationString(index);
+		}
+
+		private void Engine_ClipListChanged(object sender, EventArgs e) {
+			SetMainWindowTitle();
 		}
 
 		public void Dispose()
