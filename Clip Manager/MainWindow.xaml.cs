@@ -89,7 +89,47 @@ namespace Clip_Manager
 			}
 		}
 
-		private void Open() {
+		private void NewClipList() {
+			var manager = (ClipManagerViewModel)DataContext;
+
+			if (!manager.IsDirty) {
+				manager.ClearClips();
+			} else {
+				var result = MessageBox.Show(CloseWarning, "Clips", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+
+				switch (result) {
+					case MessageBoxResult.Yes:
+						SaveClipList();
+						manager.ClearClips();
+						break;
+					case MessageBoxResult.No:
+						manager.ClearClips();
+						break;
+				}
+			}
+		}
+
+		private void OpenClipList() {
+			var manager = (ClipManagerViewModel)DataContext;
+
+			if (!manager.IsDirty) {
+				_OpenClipList();
+			} else {
+				var result = MessageBox.Show(CloseWarning, "Clips", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+
+				switch (result) {
+					case MessageBoxResult.Yes:
+						SaveClipList();
+						_OpenClipList();
+						break;
+					case MessageBoxResult.No:
+						_OpenClipList();
+						break;
+				}
+			}
+		}
+
+		private void _OpenClipList() {
 			var dialog = new OpenFileDialog();
 			dialog.DefaultExt = "clips";
 			dialog.Filter = "Clip Lists (*.clips)|*.clips";
@@ -101,6 +141,26 @@ namespace Clip_Manager
 		}
 
 		private void OpenDirectory() {
+			var manager = (ClipManagerViewModel)DataContext;
+
+			if (!manager.IsDirty) {
+				_OpenDirectory();
+			} else {
+				var result = MessageBox.Show(CloseWarning, "Clips", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+
+				switch (result) {
+					case MessageBoxResult.Yes:
+						SaveClipList();
+						_OpenDirectory();
+						break;
+					case MessageBoxResult.No:
+						_OpenDirectory();
+						break;
+				}
+			}
+		}
+
+		private void _OpenDirectory() {
 			var dialog = new System.Windows.Forms.FolderBrowserDialog();
 
 			if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
@@ -109,7 +169,7 @@ namespace Clip_Manager
 			}
 		}
 
-		private void Save() {
+		private void SaveClipList() {
 			var manager = (ClipManagerViewModel)DataContext;
 			
 			if (manager.FileName != null) {
@@ -117,11 +177,11 @@ namespace Clip_Manager
 			}
 
 			else {
-				SaveAs();
+				SaveClipListAs();
 			}
 		}
 
-		private void SaveAs() {
+		private void SaveClipListAs() {
 			var dialog = new SaveFileDialog();
 			dialog.DefaultExt = "clips";
 			dialog.Filter = "Clip Lists (*.clips)|*.clips";
@@ -132,78 +192,48 @@ namespace Clip_Manager
 			}
 		}
 
-		private void saveClipListAs_Click(object sender, RoutedEventArgs e) {
-			SaveAs();
+		private void newClipList_Click(object sender, RoutedEventArgs e) {
+			NewClipList();
 		}
 
 		private void openClipList_Click(object sender, RoutedEventArgs e) {
-			var manager = (ClipManagerViewModel)DataContext;
-
-			if (!manager.IsDirty) {
-				Open();
-			} else {
-				var result = MessageBox.Show(CloseWarning, "Clips", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
-
-				switch (result) {
-					case MessageBoxResult.Yes:
-						Save();
-						Open();
-						break;
-					case MessageBoxResult.No:
-						Open();
-						break;
-				}
-			}
-		}
-
-		private void newClipList_Click(object sender, RoutedEventArgs e) {
-			var manager = (ClipManagerViewModel)DataContext;
-
-			if (!manager.IsDirty) {
-				manager.ClearClips();
-			}
-
-			else {
-				var result = MessageBox.Show(CloseWarning, "Clips", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
-
-				switch (result) {
-					case MessageBoxResult.Yes:
-						Save();
-						manager.ClearClips();
-						break;
-					case MessageBoxResult.No:
-						manager.ClearClips();
-						break;
-				}
-			}
-		}
-
-		private void saveClipList_Click(object sender, RoutedEventArgs e) {
-			Save();
+			OpenClipList();
 		}
 
 		private void openClipFolder_Click(object sender, RoutedEventArgs e) {
-			var manager = (ClipManagerViewModel)DataContext;
+			OpenDirectory();
+		}
 
-			if (!manager.IsDirty) {
-				OpenDirectory();
-			} else {
-				var result = MessageBox.Show(CloseWarning, "Clips", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+		private void saveClipList_Click(object sender, RoutedEventArgs e) {
+			SaveClipList();
+		}
 
-				switch (result) {
-					case MessageBoxResult.Yes:
-						Save();
-						OpenDirectory();
-						break;
-					case MessageBoxResult.No:
-						OpenDirectory();
-						break;
-				}
-			}
+		private void saveClipListAs_Click(object sender, RoutedEventArgs e) {
+			SaveClipListAs();
 		}
 
 		private void exit_Click(object sender, RoutedEventArgs e) {
 			Application.Current.Shutdown();
+		}
+
+		private void NewCommand_Executed(object sender, ExecutedRoutedEventArgs e) {
+			NewClipList();
+		}
+
+		private void OpenCommand_Executed(object sender, ExecutedRoutedEventArgs e) {
+			OpenClipList();
+		}
+
+		private void OpenFolderCommand_Executed(object sender, ExecutedRoutedEventArgs e) {
+			OpenDirectory();
+		}
+
+		private void SaveCommand_Executed(object sender, ExecutedRoutedEventArgs e) {
+			SaveClipList();
+		}
+
+		private void SaveAsCommand_Executed(object sender, ExecutedRoutedEventArgs e) {
+			SaveClipListAs();
 		}
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
@@ -214,7 +244,7 @@ namespace Clip_Manager
 
 				switch (result) {
 					case MessageBoxResult.Yes:
-						Save();
+						SaveClipList();
 						break;
 					case MessageBoxResult.Cancel:
 						e.Cancel = true;
@@ -236,5 +266,26 @@ namespace Clip_Manager
             }
         }
 		*/
+	}
+
+	public static class Commands {
+		public static readonly RoutedCommand NewCommand =
+			new RoutedCommand("New Clip List", typeof(MainWindow));
+		public static readonly RoutedCommand OpenCommand =
+			new RoutedCommand("Open Clip List…", typeof(MainWindow));
+		public static readonly RoutedCommand OpenFolderCommand =
+			new RoutedCommand("Open Clip List From Folder…", typeof(MainWindow));
+		public static readonly RoutedCommand SaveCommand =
+			new RoutedCommand("Save Clip List", typeof(MainWindow));
+		public static readonly RoutedCommand SaveAsCommand =
+			new RoutedCommand("Save Clip List As…", typeof(MainWindow));
+
+		static Commands() {
+			NewCommand.InputGestures.Add(new KeyGesture(Key.N, ModifierKeys.Control));
+			OpenCommand.InputGestures.Add(new KeyGesture(Key.O, ModifierKeys.Control));
+			OpenFolderCommand.InputGestures.Add(new KeyGesture(Key.I, ModifierKeys.Control));
+			SaveCommand.InputGestures.Add(new KeyGesture(Key.S, ModifierKeys.Control));
+			SaveAsCommand.InputGestures.Add(new KeyGesture(Key.S, ModifierKeys.Control | ModifierKeys.Shift));
+		}
 	}
 }

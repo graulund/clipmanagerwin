@@ -34,8 +34,22 @@ namespace Clip_Manager.Model
 			outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
 		}
 
-		public void SetClip(int index, CachedSound clip)
+		public void SetClip(int index, string fileName)
 		{
+			CachedSound clip;
+
+			try {
+				clip = new CachedSound(fileName);
+			}
+
+			catch (Exception e) {
+				Console.WriteLine(
+					"Exception occurred creating cached sound from file name {0}: {1}",
+					fileName, e.Message
+				);
+				return;
+			}
+
 			if (Clips == null)
 			{
 				Clips = new Dictionary<int, CachedSound>(NUM_CLIPS);
@@ -130,18 +144,27 @@ namespace Clip_Manager.Model
 
 		public void LoadClipsFromDirectory(string directoryName) {
 			List<string> files;
+
 			try {
 				files = new List<string>(ClipFileHandler.LoadDirectory(directoryName));
 			}
 			catch (Exception) {
 				return;
 			}
-			
+
 			var clips = new Dictionary<int, CachedSound>(NUM_CLIPS);
 
 			for (var i = 0; i < NUM_CLIPS; i++) {
 				if (files.Count > i) {
-					clips.Add(i, new CachedSound(files[i]));
+					try {
+						clips.Add(i, new CachedSound(files[i]));
+					} catch (Exception e) {
+						Console.WriteLine(
+							"Exception occurred creating cached sound from file name {0}: {1}",
+							files[i], e.Message
+						);
+						return;
+					}
 				}
 			}
 

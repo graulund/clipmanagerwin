@@ -58,23 +58,23 @@ namespace Clip_Manager.ViewModel
 			engine.ClipListChanged += Engine_ClipListChanged;
 		}
 
-		public ClipViewModel TransformClip(ClipViewModel existingClip, CachedSound clip, int index)
+		public ClipViewModel TransformClip(ClipViewModel existingClipVM, CachedSound clip, int index)
 		{
 			var isPlaying = engine.CurrentlyPlayingIndex != null && engine.CurrentlyPlayingIndex.Value == index;
 
-			if (existingClip != null) {
-				existingClip.Number = 1 + index;
-				existingClip.HasValue = clip != null;
-				existingClip.FileName = clip != null ? Path.GetFileName(clip.FileName) : null;
-				existingClip.IsPlaying = isPlaying;
-				existingClip.IsNotPlaying = !isPlaying;
+			if (existingClipVM != null) {
+				existingClipVM.Number = 1 + index;
+				existingClipVM.HasValue = clip != null;
+				existingClipVM.FileName = clip != null ? Path.GetFileName(clip.FileName) : null;
+				existingClipVM.IsPlaying = isPlaying;
+				existingClipVM.IsNotPlaying = !isPlaying;
 
 				if (!isPlaying)
 				{
-					existingClip.TimeString = GetClipDurationString(index);
+					existingClipVM.TimeString = GetClipDurationString(index);
 				}
 
-				return existingClip;
+				return existingClipVM;
 			}
 			else
 			{
@@ -126,7 +126,7 @@ namespace Clip_Manager.ViewModel
 
 		public void SetClip(int number, string fileName)
 		{
-			engine.SetClip(number - 1, new CachedSound(fileName));
+			engine.SetClip(number - 1, fileName);
 		}
 
 		public void ToggleClip(object data)
@@ -195,22 +195,13 @@ namespace Clip_Manager.ViewModel
 				var index = engine.CurrentlyPlayingIndex.Value;
 				var restString = rest.ToString("\\-m\\:ss");
 
-				var clipView = Clips[index];
+				var clipVM = Clips[index];
 
-				clipView.IsPlaying = true;
-				clipView.IsNotPlaying = false;
-				clipView.TimeString = restString;
-				clipView.PlayRatio = ratio;
-				clipView.IsWarning = warning;
-
-				/*Console.WriteLine(
-					DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff tt") +
-					": Timer elapsed. Current index: {0}, Remaining: {1}, Ratio: {2}, Warning: {3}",
-					index,
-					restString,
-					ratio,
-					warning
-				);*/
+				clipVM.IsPlaying = true;
+				clipVM.IsNotPlaying = false;
+				clipVM.TimeString = restString;
+				clipVM.PlayRatio = ratio;
+				clipVM.IsWarning = warning;
 			}
 		}
 
@@ -240,12 +231,12 @@ namespace Clip_Manager.ViewModel
 			var index = e.Index;
 			Console.WriteLine("Clip stopped playing: {0}", index);
 			timer.Stop();
-			var clipView = Clips[index];
-			clipView.IsPlaying = false;
-			clipView.IsNotPlaying = true;
-			clipView.IsWarning = false;
-			clipView.PlayRatio = 0.0;
-			clipView.TimeString = GetClipDurationString(index);
+			var clipVM = Clips[index];
+			clipVM.IsPlaying = false;
+			clipVM.IsNotPlaying = true;
+			clipVM.IsWarning = false;
+			clipVM.PlayRatio = 0.0;
+			clipVM.TimeString = GetClipDurationString(index);
 		}
 
 		private void Engine_ClipListChanged(object sender, EventArgs e) {

@@ -3,11 +3,34 @@
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:l="clr-namespace:Clip_Manager"
 		mc:Ignorable="d"
 		Title="{Binding MainWindowTitle}"
 		Height="200"
 		Width="800"
 		Closing="Window_Closing">
+	<Window.CommandBindings>
+		<CommandBinding
+			x:Name="NewCommand"
+			Command="{x:Static l:Commands.NewCommand}"
+			Executed="NewCommand_Executed" />
+		<CommandBinding
+			x:Name="OpenCommand"
+			Command="{x:Static l:Commands.OpenCommand}"
+			Executed="OpenCommand_Executed" />
+		<CommandBinding
+			x:Name="OpenFolderCommand"
+			Command="{x:Static l:Commands.OpenFolderCommand}"
+			Executed="OpenFolderCommand_Executed" />
+		<CommandBinding
+			x:Name="SaveCommand"
+			Command="{x:Static l:Commands.SaveCommand}"
+			Executed="SaveCommand_Executed" />
+		<CommandBinding
+			x:Name="SaveAsCommand"
+			Command="{x:Static l:Commands.SaveAsCommand}"
+			Executed="SaveAsCommand_Executed" />
+	</Window.CommandBindings>
 	<Window.Resources>
 		<DataTemplate x:Key="clipTemplate">
 			<Grid>
@@ -77,26 +100,31 @@
 				<MenuItem
 					Header="_New Clip List"
 					InputGestureText="Ctrl+N"
+					Command="{x:Static l:Commands.NewCommand}"
 					x:Name="newClipList"
 					Click="newClipList_Click" />
 				<MenuItem
 					Header="_Open Clip List…"
 					InputGestureText="Ctrl+O"
+					Command="{x:Static l:Commands.OpenCommand}"
 					x:Name="openClipList"
 					Click="openClipList_Click" />
 				<MenuItem
 					Header="Open Clip List From _Folder…"
 					InputGestureText="Ctrl+I"
+					Command="{x:Static l:Commands.OpenFolderCommand}"
 					x:Name="openClipFolder"
 					Click="openClipFolder_Click" />
 				<MenuItem
 					Header="_Save Clip List"
 					InputGestureText="Ctrl+S"
+					Command="{x:Static l:Commands.SaveCommand}"
 					x:Name="saveClipList"
 					Click="saveClipList_Click" />
 				<MenuItem
 					Header="S_ave Clip List As…"
 					InputGestureText="Ctrl+Shift+S"
+					Command="{x:Static l:Commands.SaveAsCommand}"
 					x:Name="saveClipListAs"
 					Click="saveClipListAs_Click" />
 				<Separator />
