@@ -108,7 +108,13 @@ namespace Clip_Manager.Model
 		}
 
 		public void LoadClipsFromFile(string fileName) {
-			Clips = ClipFileHandler.ReadClipsFile(fileName);
+			try {
+				Clips = ClipFileHandler.ReadClipsFile(fileName);
+			} 
+			catch (Exception) {
+				return;
+			}
+
 			ClipListFileName = fileName;
 			ClipListIsDirty = false;
 			OnClipsChanged();
@@ -119,6 +125,30 @@ namespace Clip_Manager.Model
 			ClipFileHandler.WriteClipsFile(Clips, fileName);
 			ClipListFileName = fileName;
 			ClipListIsDirty = false;
+			OnClipListChanged();
+		}
+
+		public void LoadClipsFromDirectory(string directoryName) {
+			List<string> files;
+			try {
+				files = new List<string>(ClipFileHandler.LoadDirectory(directoryName));
+			}
+			catch (Exception) {
+				return;
+			}
+			
+			var clips = new Dictionary<int, CachedSound>(NUM_CLIPS);
+
+			for (var i = 0; i < NUM_CLIPS; i++) {
+				if (files.Count > i) {
+					clips.Add(i, new CachedSound(files[i]));
+				}
+			}
+
+			Clips = clips;
+			ClipListFileName = null;
+			ClipListIsDirty = true;
+			OnClipsChanged();
 			OnClipListChanged();
 		}
 

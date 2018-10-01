@@ -54,6 +54,17 @@ namespace Clip_Manager.Model
 			return output;
 		}
 
+		public static List<string> LoadDirectory(string directory) {
+			var files = new List<string>(Directory.GetFiles(directory, "*.*"));
+
+			return files.Where(
+				f => f.ToLowerInvariant().EndsWith(".wav") ||
+					f.ToLowerInvariant().EndsWith(".aiff") ||
+					f.ToLowerInvariant().EndsWith(".mp3") ||
+					f.ToLowerInvariant().EndsWith(".aac")
+			).ToList();
+		}
+
 		public static void WriteDict(Dictionary<int, string> dictionary, string file)
 		{
 			using (FileStream fs = File.OpenWrite(file))

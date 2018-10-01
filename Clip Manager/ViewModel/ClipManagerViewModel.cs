@@ -148,6 +148,10 @@ namespace Clip_Manager.ViewModel
 			engine.SaveClipsToFile(fileName);
 		}
 
+		public void LoadClipsFromDirectory(string directoryName) {
+			engine.LoadClipsFromDirectory(directoryName);
+		}
+
 		public void ClearClips() {
 			engine.ClearClips();
 		}

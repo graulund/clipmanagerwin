@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -90,7 +89,27 @@ namespace Clip_Manager
 			}
 		}
 
-		private void save() {
+		private void Open() {
+			var dialog = new OpenFileDialog();
+			dialog.DefaultExt = "clips";
+			dialog.Filter = "Clip Lists (*.clips)|*.clips";
+
+			if (dialog.ShowDialog() == true) {
+				var manager = (ClipManagerViewModel)DataContext;
+				manager.LoadClipsFromFile(dialog.FileName);
+			}
+		}
+
+		private void OpenDirectory() {
+			var dialog = new System.Windows.Forms.FolderBrowserDialog();
+
+			if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
+				var manager = (ClipManagerViewModel)DataContext;
+				manager.LoadClipsFromDirectory(dialog.SelectedPath);
+			}
+		}
+
+		private void Save() {
 			var manager = (ClipManagerViewModel)DataContext;
 			
 			if (manager.FileName != null) {
@@ -98,11 +117,11 @@ namespace Clip_Manager
 			}
 
 			else {
-				saveAs();
+				SaveAs();
 			}
 		}
 
-		private void saveAs() {
+		private void SaveAs() {
 			var dialog = new SaveFileDialog();
 			dialog.DefaultExt = "clips";
 			dialog.Filter = "Clip Lists (*.clips)|*.clips";
@@ -114,17 +133,26 @@ namespace Clip_Manager
 		}
 
 		private void saveClipListAs_Click(object sender, RoutedEventArgs e) {
-			saveAs();
+			SaveAs();
 		}
 
 		private void openClipList_Click(object sender, RoutedEventArgs e) {
-			var dialog = new OpenFileDialog();
-			dialog.DefaultExt = "clips";
-			dialog.Filter = "Clip Lists (*.clips)|*.clips";
+			var manager = (ClipManagerViewModel)DataContext;
 
-			if (dialog.ShowDialog() == true) {
-				var manager = (ClipManagerViewModel)DataContext;
-				manager.LoadClipsFromFile(dialog.FileName);
+			if (!manager.IsDirty) {
+				Open();
+			} else {
+				var result = MessageBox.Show(CloseWarning, "Clips", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+
+				switch (result) {
+					case MessageBoxResult.Yes:
+						Save();
+						Open();
+						break;
+					case MessageBoxResult.No:
+						Open();
+						break;
+				}
 			}
 		}
 
@@ -140,7 +168,7 @@ namespace Clip_Manager
 
 				switch (result) {
 					case MessageBoxResult.Yes:
-						save();
+						Save();
 						manager.ClearClips();
 						break;
 					case MessageBoxResult.No:
@@ -151,11 +179,27 @@ namespace Clip_Manager
 		}
 
 		private void saveClipList_Click(object sender, RoutedEventArgs e) {
-			save();
+			Save();
 		}
 
 		private void openClipFolder_Click(object sender, RoutedEventArgs e) {
-			// TODO
+			var manager = (ClipManagerViewModel)DataContext;
+
+			if (!manager.IsDirty) {
+				OpenDirectory();
+			} else {
+				var result = MessageBox.Show(CloseWarning, "Clips", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+
+				switch (result) {
+					case MessageBoxResult.Yes:
+						Save();
+						OpenDirectory();
+						break;
+					case MessageBoxResult.No:
+						OpenDirectory();
+						break;
+				}
+			}
 		}
 
 		private void exit_Click(object sender, RoutedEventArgs e) {
@@ -170,7 +214,7 @@ namespace Clip_Manager
 
 				switch (result) {
 					case MessageBoxResult.Yes:
-						save();
+						Save();
 						break;
 					case MessageBoxResult.Cancel:
 						e.Cancel = true;
