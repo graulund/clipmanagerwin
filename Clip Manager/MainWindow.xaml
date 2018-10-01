@@ -101,32 +101,27 @@
 					Header="_New Clip List"
 					InputGestureText="Ctrl+N"
 					Command="{x:Static l:Commands.NewCommand}"
-					x:Name="newClipList"
-					Click="newClipList_Click" />
+					x:Name="newClipList" />
 				<MenuItem
 					Header="_Open Clip List…"
 					InputGestureText="Ctrl+O"
 					Command="{x:Static l:Commands.OpenCommand}"
-					x:Name="openClipList"
-					Click="openClipList_Click" />
+					x:Name="openClipList" />
 				<MenuItem
 					Header="Open Clip List From _Folder…"
 					InputGestureText="Ctrl+I"
 					Command="{x:Static l:Commands.OpenFolderCommand}"
-					x:Name="openClipFolder"
-					Click="openClipFolder_Click" />
+					x:Name="openClipFolder" />
 				<MenuItem
 					Header="_Save Clip List"
 					InputGestureText="Ctrl+S"
 					Command="{x:Static l:Commands.SaveCommand}"
-					x:Name="saveClipList"
-					Click="saveClipList_Click" />
+					x:Name="saveClipList" />
 				<MenuItem
 					Header="S_ave Clip List As…"
 					InputGestureText="Ctrl+Shift+S"
 					Command="{x:Static l:Commands.SaveAsCommand}"
-					x:Name="saveClipListAs"
-					Click="saveClipListAs_Click" />
+					x:Name="saveClipListAs" />
 				<Separator />
 				<!-- TODO: Open recent -->
 				<MenuItem

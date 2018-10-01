@@ -192,26 +192,6 @@ namespace Clip_Manager
 			}
 		}
 
-		private void newClipList_Click(object sender, RoutedEventArgs e) {
-			NewClipList();
-		}
-
-		private void openClipList_Click(object sender, RoutedEventArgs e) {
-			OpenClipList();
-		}
-
-		private void openClipFolder_Click(object sender, RoutedEventArgs e) {
-			OpenDirectory();
-		}
-
-		private void saveClipList_Click(object sender, RoutedEventArgs e) {
-			SaveClipList();
-		}
-
-		private void saveClipListAs_Click(object sender, RoutedEventArgs e) {
-			SaveClipListAs();
-		}
-
 		private void exit_Click(object sender, RoutedEventArgs e) {
 			Application.Current.Shutdown();
 		}
