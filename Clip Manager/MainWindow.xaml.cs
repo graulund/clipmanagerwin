@@ -22,6 +22,19 @@ namespace Clip_Manager
 			InitializeComponent();
 
 			KeyUp += MainWindow_KeyUp;
+
+			viewModel.RecentMenuSeparator = RecentMenuSeparator;
+			viewModel.RecentMenuItems.Add(RecentMenuItem1);
+			viewModel.RecentMenuItems.Add(RecentMenuItem2);
+			viewModel.RecentMenuItems.Add(RecentMenuItem3);
+			viewModel.RecentMenuItems.Add(RecentMenuItem4);
+			viewModel.RecentMenuItems.Add(RecentMenuItem5);
+			viewModel.RecentMenuItems.Add(RecentMenuItem6);
+			viewModel.RecentMenuItems.Add(RecentMenuItem7);
+			viewModel.RecentMenuItems.Add(RecentMenuItem8);
+			viewModel.RecentMenuItems.Add(RecentMenuItem9);
+			viewModel.RecentMenuItems.Add(RecentMenuItem10);
+			viewModel.SetMostRecentUsedItems();
 		}
 
 		private void MainWindow_KeyUp(object sender, KeyEventArgs e)
@@ -231,6 +244,56 @@ namespace Clip_Manager
 						break;
 				}
 			}
+		}
+
+		private void RecentMenuItem1_Click(object sender, RoutedEventArgs e) {
+			var manager = (ClipManagerViewModel)DataContext;
+			manager.LoadRecentlyUsedListFile(0);
+		}
+
+		private void RecentMenuItem2_Click(object sender, RoutedEventArgs e) {
+			var manager = (ClipManagerViewModel)DataContext;
+			manager.LoadRecentlyUsedListFile(1);
+		}
+
+		private void RecentMenuItem3_Click(object sender, RoutedEventArgs e) {
+			var manager = (ClipManagerViewModel)DataContext;
+			manager.LoadRecentlyUsedListFile(2);
+		}
+
+		private void RecentMenuItem4_Click(object sender, RoutedEventArgs e) {
+			var manager = (ClipManagerViewModel)DataContext;
+			manager.LoadRecentlyUsedListFile(3);
+		}
+
+		private void RecentMenuItem5_Click(object sender, RoutedEventArgs e) {
+			var manager = (ClipManagerViewModel)DataContext;
+			manager.LoadRecentlyUsedListFile(4);
+		}
+
+		private void RecentMenuItem6_Click(object sender, RoutedEventArgs e) {
+			var manager = (ClipManagerViewModel)DataContext;
+			manager.LoadRecentlyUsedListFile(5);
+		}
+
+		private void RecentMenuItem7_Click(object sender, RoutedEventArgs e) {
+			var manager = (ClipManagerViewModel)DataContext;
+			manager.LoadRecentlyUsedListFile(6);
+		}
+
+		private void RecentMenuItem8_Click(object sender, RoutedEventArgs e) {
+			var manager = (ClipManagerViewModel)DataContext;
+			manager.LoadRecentlyUsedListFile(7);
+		}
+
+		private void RecentMenuItem9_Click(object sender, RoutedEventArgs e) {
+			var manager = (ClipManagerViewModel)DataContext;
+			manager.LoadRecentlyUsedListFile(8);
+		}
+
+		private void RecentMenuItem10_Click(object sender, RoutedEventArgs e) {
+			var manager = (ClipManagerViewModel)DataContext;
+			manager.LoadRecentlyUsedListFile(9);
 		}
 
 		/*

@@ -122,8 +122,18 @@
 					InputGestureText="Ctrl+Shift+S"
 					Command="{x:Static l:Commands.SaveAsCommand}"
 					x:Name="saveClipListAs" />
+				<Separator x:Name="RecentMenuSeparator" Visibility="Collapsed" />
+				<MenuItem x:Name="RecentMenuItem1" Click="RecentMenuItem1_Click" Visibility="Collapsed" />
+				<MenuItem x:Name="RecentMenuItem2" Click="RecentMenuItem2_Click" Visibility="Collapsed" />
+				<MenuItem x:Name="RecentMenuItem3" Click="RecentMenuItem3_Click" Visibility="Collapsed" />
+				<MenuItem x:Name="RecentMenuItem4" Click="RecentMenuItem4_Click" Visibility="Collapsed" />
+				<MenuItem x:Name="RecentMenuItem5" Click="RecentMenuItem5_Click" Visibility="Collapsed" />
+				<MenuItem x:Name="RecentMenuItem6" Click="RecentMenuItem6_Click"  Visibility="Collapsed" />
+				<MenuItem x:Name="RecentMenuItem7" Click="RecentMenuItem7_Click" Visibility="Collapsed" />
+				<MenuItem x:Name="RecentMenuItem8" Click="RecentMenuItem8_Click" Visibility="Collapsed" />
+				<MenuItem x:Name="RecentMenuItem9" Click="RecentMenuItem9_Click" Visibility="Collapsed" />
+				<MenuItem x:Name="RecentMenuItem10" Click="RecentMenuItem10_Click" Visibility="Collapsed" />
 				<Separator />
-				<!-- TODO: Open recent -->
 				<MenuItem
 					Header="_Exit"
 					InputGestureText="Alt+F4"

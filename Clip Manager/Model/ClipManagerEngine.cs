@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
 
 namespace Clip_Manager.Model
 {
@@ -11,11 +10,13 @@ namespace Clip_Manager.Model
 		private readonly IWavePlayer outputDevice;
 
 		public const int NUM_CLIPS = 8;
+		public const int NUM_RECENTLY_USEDS = 11; // One more than is displayed in the interface
 		public Dictionary<int, CachedSound> Clips { get; set; }
 		public int? CurrentlyPlayingIndex = null;
 		public CachedSound CurrentlyPlayingClip = null;
 		public CachedSoundSampleProvider CurrentlyPlayingSampleProvider = null;
 		private int? startIndexAfterStopping = null;
+		public List<string> RecentlyUsedListFileNames { get; set; }
 
 		public string ClipListFileName { get; set; }
 		public bool ClipListIsDirty { get; set; }
@@ -24,6 +25,7 @@ namespace Clip_Manager.Model
 		public event EventHandler<ClipEventArgs> ClipStartedPlaying;
 		public event EventHandler<ClipEventArgs> ClipStoppedPlaying;
 		public event EventHandler ClipListChanged;
+		public event EventHandler RecentlyUsedsChanged;
 
 		public ClipManagerEngine()
 		{
@@ -32,6 +34,7 @@ namespace Clip_Manager.Model
 			ClipListIsDirty = false;
 			outputDevice = new WaveOutEvent();
 			outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
+			LoadRecentlyUsedsFromSettings();
 		}
 
 		public void SetClip(int index, string fileName)
@@ -133,13 +136,21 @@ namespace Clip_Manager.Model
 			ClipListIsDirty = false;
 			OnClipsChanged();
 			OnClipListChanged();
+			AddToRecentlyUsedListFiles(fileName);
 		}
 
 		public void SaveClipsToFile(string fileName) {
-			ClipFileHandler.WriteClipsFile(Clips, fileName);
+			try {
+				ClipFileHandler.WriteClipsFile(Clips, fileName);
+			}
+			catch (Exception) {
+				return;
+			}
+
 			ClipListFileName = fileName;
 			ClipListIsDirty = false;
 			OnClipListChanged();
+			AddToRecentlyUsedListFiles(fileName);
 		}
 
 		public void LoadClipsFromDirectory(string directoryName) {
@@ -173,6 +184,52 @@ namespace Clip_Manager.Model
 			ClipListIsDirty = true;
 			OnClipsChanged();
 			OnClipListChanged();
+		}
+
+		public void LoadRecentlyUsedsFromSettings() {
+			var recentlyUseds = new List<string>();
+
+			for (var i = 0; i < NUM_RECENTLY_USEDS; i++) {
+				var path = Properties.Settings.Default["RecentlyUsedPath" + i];
+
+				if (path is string && (string)path != "") {
+					recentlyUseds.Add((string)path);
+				}
+
+				else {
+					break;
+				}
+			}
+
+			Console.WriteLine("Loaded {0} recently useds from settings", recentlyUseds.Count);
+
+			RecentlyUsedListFileNames = recentlyUseds;
+			OnRecentlyUsedsChanged();
+		}
+
+		public void StoreRecentlyUsedIntoSettings() {
+			for (var i = 0; i < NUM_RECENTLY_USEDS; i++) {
+				Properties.Settings.Default["RecentlyUsedPath" + i] =
+					RecentlyUsedListFileNames.Count > i ? RecentlyUsedListFileNames[i] : null;
+			}
+
+			Properties.Settings.Default.Save();
+		}
+
+		public void AddToRecentlyUsedListFiles(string filePath) {
+			RecentlyUsedListFileNames = RecentlyUsedListFileNames.Where(f => f != filePath).ToList();
+			RecentlyUsedListFileNames.Insert(0, filePath);
+			RecentlyUsedListFileNames = RecentlyUsedListFileNames.Take(NUM_RECENTLY_USEDS).ToList();
+			OnRecentlyUsedsChanged();
+			StoreRecentlyUsedIntoSettings();
+		}
+
+		public void LoadRecentlyUsedListFile(int index) {
+			if (RecentlyUsedListFileNames.Count <= index) {
+				return;
+			}
+
+			LoadClipsFromFile(RecentlyUsedListFileNames[index]);
 		}
 
 		private void OutputDevice_PlaybackStopped(object sender, StoppedEventArgs e)
@@ -216,6 +273,11 @@ namespace Clip_Manager.Model
 		protected virtual void OnClipListChanged()
 		{
 			ClipListChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		protected virtual void OnRecentlyUsedsChanged()
+		{
+			RecentlyUsedsChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		public void Dispose()

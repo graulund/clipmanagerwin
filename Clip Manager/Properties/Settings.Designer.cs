@@ -8,22 +8,150 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Clip_Manager.Properties
-{
-
-
+namespace Clip_Manager.Properties {
+    
+    
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "11.0.0.0")]
-    internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase
-    {
-
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.8.0.0")]
+    internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
+        
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
-
-        public static Settings Default
-        {
-            get
-            {
+        
+        public static Settings Default {
+            get {
                 return defaultInstance;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RecentlyUsedPath0 {
+            get {
+                return ((string)(this["RecentlyUsedPath0"]));
+            }
+            set {
+                this["RecentlyUsedPath0"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RecentlyUsedPath1 {
+            get {
+                return ((string)(this["RecentlyUsedPath1"]));
+            }
+            set {
+                this["RecentlyUsedPath1"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RecentlyUsedPath2 {
+            get {
+                return ((string)(this["RecentlyUsedPath2"]));
+            }
+            set {
+                this["RecentlyUsedPath2"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RecentlyUsedPath3 {
+            get {
+                return ((string)(this["RecentlyUsedPath3"]));
+            }
+            set {
+                this["RecentlyUsedPath3"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RecentlyUsedPath4 {
+            get {
+                return ((string)(this["RecentlyUsedPath4"]));
+            }
+            set {
+                this["RecentlyUsedPath4"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RecentlyUsedPath5 {
+            get {
+                return ((string)(this["RecentlyUsedPath5"]));
+            }
+            set {
+                this["RecentlyUsedPath5"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RecentlyUsedPath6 {
+            get {
+                return ((string)(this["RecentlyUsedPath6"]));
+            }
+            set {
+                this["RecentlyUsedPath6"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RecentlyUsedPath7 {
+            get {
+                return ((string)(this["RecentlyUsedPath7"]));
+            }
+            set {
+                this["RecentlyUsedPath7"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RecentlyUsedPath8 {
+            get {
+                return ((string)(this["RecentlyUsedPath8"]));
+            }
+            set {
+                this["RecentlyUsedPath8"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RecentlyUsedPath9 {
+            get {
+                return ((string)(this["RecentlyUsedPath9"]));
+            }
+            set {
+                this["RecentlyUsedPath9"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RecentlyUsedPath10 {
+            get {
+                return ((string)(this["RecentlyUsedPath10"]));
+            }
+            set {
+                this["RecentlyUsedPath10"] = value;
             }
         }
     }
