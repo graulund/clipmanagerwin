@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NAudio.Midi;
 using NAudio.Wave;
 
 namespace Clip_Manager.Model
@@ -11,14 +12,19 @@ namespace Clip_Manager.Model
 
 		public const int NUM_CLIPS = 8;
 		public const int NUM_RECENTLY_USEDS = 11; // One more than is displayed in the interface
+
 		public Dictionary<int, CachedSound> Clips { get; set; }
+
 		public int? CurrentlyPlayingIndex = null;
 		public CachedSound CurrentlyPlayingClip = null;
 		public CachedSoundSampleProvider CurrentlyPlayingSampleProvider = null;
 		private int? startIndexAfterStopping = null;
-		public List<string> RecentlyUsedListFileNames { get; set; }
-		public string OutputDeviceProductGuid { get; set; }
 
+		public string OutputDeviceProductGuid { get; set; }
+		public List<MidiIn> MidiIns { get; set; }
+		public List<MidiOut> MidiOuts { get; set; }
+
+		public List<string> RecentlyUsedListFileNames { get; set; }
 		public string ClipListFileName { get; set; }
 		public bool ClipListIsDirty { get; set; }
 
@@ -33,15 +39,13 @@ namespace Clip_Manager.Model
 			Clips = new Dictionary<int, CachedSound>(NUM_CLIPS);
 			ClipListFileName = null;
 			ClipListIsDirty = false;
+
 			LoadOutputDeviceProductGuidSetting();
 			outputDevice = new WaveOutEvent { DeviceNumber = GetOutputDeviceIndex() };
 			outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
-			LoadRecentlyUsedsFromSettings();
 
-			for (int n = -1; n < WaveOut.DeviceCount; n++) {
-				var caps = WaveOut.GetCapabilities(n);
-				Console.WriteLine($"{n}: {caps.ProductName}, {caps.ProductGuid}, {caps.NameGuid}, {caps.ManufacturerGuid}");
-			}
+			LoadMidiDevices();
+			LoadRecentlyUsedsFromSettings();
 		}
 
 		public void SetClip(int index, string fileName)
@@ -101,6 +105,7 @@ namespace Clip_Manager.Model
 					CurrentlyPlayingIndex = index;
 					CurrentlyPlayingClip = clip;
 					CurrentlyPlayingSampleProvider = sampleProvider;
+					UpdateActivityIndicator(index);
 					OnClipStartedPlaying(index);
 				}
 			}
@@ -113,21 +118,17 @@ namespace Clip_Manager.Model
 
 		public void ToggleSound(int index)
 		{
-			Console.WriteLine("Toggle: {0}", CurrentlyPlayingIndex);
 			if (CurrentlyPlayingIndex != null && CurrentlyPlayingIndex.Value == index)
 			{
-				Console.WriteLine("Toggle: Already playing, stopping");
 				Stop();
 				return;
 			}
 
-			Console.WriteLine("Toggle: Starting");
 			PlaySound(index);
 		}
 
 		public void Stop()
 		{
-			Console.WriteLine(DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff tt") + ": Stopping");
 			outputDevice?.Stop();
 		}
 
@@ -270,7 +271,6 @@ namespace Clip_Manager.Model
 
 		private void OutputDevice_PlaybackStopped(object sender, StoppedEventArgs e)
 		{
-			Console.WriteLine(DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff tt") + ": Stopped");
 			var playedIndex = CurrentlyPlayingIndex;
 
 			CurrentlyPlayingIndex = null;
@@ -278,6 +278,7 @@ namespace Clip_Manager.Model
 
 			if (playedIndex != null)
 			{
+				UpdateActivityIndicator(playedIndex.Value);
 				OnClipStoppedPlaying(playedIndex.Value);
 			}
 
@@ -286,6 +287,91 @@ namespace Clip_Manager.Model
 				var index = startIndexAfterStopping.Value;
 				startIndexAfterStopping = null;
 				PlaySound(index);
+			}
+		}
+
+		private void OnNoteOn(int note) {
+			var index = ClipMidiTools.IndexForNote(note);
+
+			if (index >= 0) {
+				ToggleSound(index);
+			}
+		}
+
+		private void OnNoteOff(int note) {
+			var index = ClipMidiTools.IndexForNote(note);
+
+			if (index >= 0) {
+				UpdateActivityIndicator(index);
+			}
+		}
+
+		private void MidiIn_MessageReceived(object sender, MidiInMessageEventArgs e) {
+			var evt = e.MidiEvent;
+
+			if (MidiEvent.IsNoteOn(evt)) {
+				OnNoteOn(((NoteEvent)evt).NoteNumber);
+			}
+
+			else if (MidiEvent.IsNoteOff(evt)) {
+				OnNoteOff(((NoteEvent)evt).NoteNumber);
+			}
+		}
+
+		private void SetActivityIndicator(int index, bool on) {
+			if (MidiOuts != null) {
+				foreach (var device in MidiOuts) {
+					ClipMidiTools.SetIndexActivityIndicator(device, index, on);
+				}
+			}
+		}
+
+		private void UpdateActivityIndicator(int index) {
+			SetActivityIndicator(index, CurrentlyPlayingIndex != null && CurrentlyPlayingIndex == index);
+		}
+
+		private void DisposeMidiDevices() {
+			if (MidiIns != null) {
+				foreach (var device in MidiIns) {
+					device.Stop();
+					device.Dispose();
+				}
+			}
+
+			if (MidiOuts != null) {
+				foreach (var device in MidiOuts) {
+					device.Dispose();
+				}
+			}
+		}
+
+		public void LoadMidiDevices() {
+			DisposeMidiDevices();
+
+			MidiIns = new List<MidiIn>();
+			MidiOuts = new List<MidiOut>();
+
+			for (int device = 0; device < MidiIn.NumberOfDevices; device++) {
+				var caps = MidiIn.DeviceInfo(device);
+
+				if (ClipMidiTools.IsCompatibleDeviceName(caps.ProductName)) {
+					var midiIn = new MidiIn(device);
+					midiIn.MessageReceived += MidiIn_MessageReceived;
+					midiIn.Start();
+					MidiIns.Add(midiIn);
+				}
+			}
+
+			for (int device = 0; device < MidiOut.NumberOfDevices; device++) {
+				var caps = MidiOut.DeviceInfo(device);
+
+				if (ClipMidiTools.IsCompatibleDeviceName(caps.ProductName)) {
+					MidiOuts.Add(new MidiOut(device));
+				}
+			}
+
+			for (var i = 0; i < NUM_CLIPS; i++) {
+				UpdateActivityIndicator(i);
 			}
 		}
 
@@ -319,6 +405,7 @@ namespace Clip_Manager.Model
 		public void Dispose()
 		{
 			outputDevice.Dispose();
+			DisposeMidiDevices();
 		}
 	}
 

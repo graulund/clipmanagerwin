@@ -63,6 +63,7 @@
     <Compile Include="Model\ClipManagerEngine.cs" />
     <Compile Include="Model\CachedSound.cs" />
     <Compile Include="Model\CachedSoundSampleProvider.cs" />
+    <Compile Include="Model\ClipMidiTools.cs" />
     <Compile Include="Model\RoundedTimeSpan.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SettingsWindow.xaml.cs">
