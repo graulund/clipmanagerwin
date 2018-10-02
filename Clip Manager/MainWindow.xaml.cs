@@ -15,6 +15,15 @@ namespace Clip_Manager
 	{
 		const string CloseWarning = "You have unsaved changes. Save them before continuing?";
 
+		const double MIN_WINDOW_WIDTH = 350;
+		const double MIN_WINDOW_HEIGHT = 180;
+		const double MAX_WINDOW_HEIGHT = 400;
+
+		private double _windowTop = 100;
+		private double _windowLeft = 100;
+		private double _windowWidth = 800;
+		private double _windowHeight = 200;
+
 		public MainWindow()
 		{
 			var viewModel = new ClipManagerViewModel();
@@ -35,6 +44,12 @@ namespace Clip_Manager
 			viewModel.RecentMenuItems.Add(RecentMenuItem9);
 			viewModel.RecentMenuItems.Add(RecentMenuItem10);
 			viewModel.SetMostRecentUsedItems();
+
+			_windowTop = Properties.Settings.Default.MainWindowTop;
+			_windowLeft = Properties.Settings.Default.MainWindowLeft;
+			_windowHeight = Properties.Settings.Default.MainWindowHeight;
+			_windowWidth = Properties.Settings.Default.MainWindowWidth;
+			DeploySavedDimensions();
 		}
 
 		private void MainWindow_KeyUp(object sender, KeyEventArgs e)
@@ -221,6 +236,17 @@ namespace Clip_Manager
 			OpenDirectory();
 		}
 
+		/*
+		private void OnOpenFileClick(object sender, EventArgs e) {
+			var openFileDialog = new OpenFileDialog();
+			string allExtensions = "*.wav;*.aiff;*.mp3;*.aac";
+			openFileDialog.Filter = String.Format("All Supported Files|{0}|All Files (*.*)|*.*", allExtensions);
+			openFileDialog.FilterIndex = 1;
+			if (openFileDialog.ShowDialog() == DialogResult.OK) {
+				fileName = openFileDialog.FileName;
+			}
+		}*/
+
 		private void SaveCommand_Executed(object sender, ExecutedRoutedEventArgs e) {
 			SaveClipList();
 		}
@@ -243,6 +269,15 @@ namespace Clip_Manager
 						e.Cancel = true;
 						break;
 				}
+			}
+
+			if (WindowState == WindowState.Normal) {
+				Properties.Settings.Default.MainWindowTop = Top;
+				Properties.Settings.Default.MainWindowLeft = Left;
+				Properties.Settings.Default.MainWindowHeight = ConstrainWindowHeight(Height);
+				Properties.Settings.Default.MainWindowWidth = ConstrainWindowWidth(Width);
+
+				Properties.Settings.Default.Save();
 			}
 		}
 
@@ -302,19 +337,55 @@ namespace Clip_Manager
 			settingsWindow.ShowDialog();
 		}
 
-		/*
-        private void OnOpenFileClick(object sender, EventArgs e)
-        {
-            var openFileDialog = new OpenFileDialog();
-            string allExtensions = "*.wav;*.aiff;*.mp3;*.aac";
-            openFileDialog.Filter = String.Format("All Supported Files|{0}|All Files (*.*)|*.*", allExtensions);
-            openFileDialog.FilterIndex = 1;
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                fileName = openFileDialog.FileName;
-            }
-        }
-		*/
+		private double ConstrainWindowWidth(double width) {
+			return Math.Max(width, MIN_WINDOW_WIDTH);
+		}
+
+		private double ConstrainWindowHeight(double height) {
+			return Math.Max(Math.Min(height, MAX_WINDOW_HEIGHT), MIN_WINDOW_HEIGHT);
+		}
+
+		private void DeploySavedDimensions() {
+			if (WindowState != WindowState.Normal) {
+				return;
+			}
+
+			_windowWidth = ConstrainWindowWidth(_windowWidth);
+			_windowHeight = ConstrainWindowHeight(_windowHeight);
+
+			// Size to fit
+
+			if (_windowHeight > SystemParameters.VirtualScreenHeight) {
+				_windowHeight = SystemParameters.VirtualScreenHeight;
+			}
+
+			if (_windowWidth > SystemParameters.VirtualScreenWidth) {
+				_windowWidth = SystemParameters.VirtualScreenWidth;
+			}
+
+			// Move into view
+
+			if (_windowTop + _windowHeight / 2 > SystemParameters.VirtualScreenHeight) {
+				_windowTop = SystemParameters.VirtualScreenHeight - _windowHeight;
+			}
+
+			if (_windowLeft + _windowWidth / 2 > SystemParameters.VirtualScreenWidth) {
+				_windowLeft = SystemParameters.VirtualScreenWidth - _windowWidth;
+			}
+
+			if (_windowTop < 0) {
+				_windowTop = 0;
+			}
+
+			if (_windowLeft < 0) {
+				_windowLeft = 0;
+			}
+
+			Top = _windowTop;
+			Left = _windowLeft;
+			Width = _windowWidth;
+			Height = _windowHeight;
+		}
 	}
 
 	public static class Commands {

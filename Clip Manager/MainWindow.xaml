@@ -6,8 +6,11 @@
 		xmlns:l="clr-namespace:Clip_Manager"
 		mc:Ignorable="d"
 		Title="{Binding MainWindowTitle}"
-		Height="200"
 		Width="800"
+		Height="200"
+		MinWidth="350"
+		MinHeight="180"
+		MaxHeight="400"
 		Closing="Window_Closing">
 	<Window.CommandBindings>
 		<CommandBinding
@@ -35,12 +38,12 @@
 		<DataTemplate x:Key="clipTemplate">
 			<Grid>
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="1*" />
-					<ColumnDefinition Width="5*" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
 				</Grid.ColumnDefinitions>
 				<Grid.RowDefinitions>
-					<RowDefinition />
-					<RowDefinition />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="*" />
 				</Grid.RowDefinitions>
 				<ProgressBar
 					Grid.Row="0"
@@ -77,6 +80,8 @@
 					Content="{Binding FileName}"
 					Grid.Row="0"
 					Grid.Column="1"
+					HorizontalAlignment="Left"
+					VerticalAlignment="Top"
 					AllowDrop="{Binding IsNotPlaying}"
 					Drop="ProgressBar_Drop" />
 				<Label
