@@ -330,6 +330,12 @@ namespace Clip_Manager.Model
 			SetActivityIndicator(index, CurrentlyPlayingIndex != null && CurrentlyPlayingIndex == index);
 		}
 
+		public void ClearActivityIndicators() {
+			for (var i = 0; i < NUM_CLIPS; i++) {
+				SetActivityIndicator(i, false);
+			}
+		}
+
 		private void DisposeMidiDevices() {
 			if (MidiIns != null) {
 				foreach (var device in MidiIns) {

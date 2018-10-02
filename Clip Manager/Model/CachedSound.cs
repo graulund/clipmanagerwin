@@ -7,6 +7,8 @@ namespace Clip_Manager.Model
 {
 	public class CachedSound
 	{
+		const int CLIP_MAX_MINUTES = 7;
+
 		public byte[] AudioData { get; }
 		public WaveFormat WaveFormat { get; }
 		public string FileName { get; }
@@ -16,8 +18,10 @@ namespace Clip_Manager.Model
 		{
 			using (var audioFileReader = new AudioFileReader(audioFileName))
 			{
-				// TODO: could add resampling in here if required
-				// TODO: Throw if too long
+				if (audioFileReader.TotalTime > new TimeSpan(0, CLIP_MAX_MINUTES, 0)) {
+					throw new OutOfMemoryException("Audio file too long");
+				}
+
 				WaveFormat = audioFileReader.WaveFormat;
 				FileName = audioFileName;
 				TotalTime = audioFileReader.TotalTime;

@@ -307,6 +307,10 @@ namespace Clip_Manager.ViewModel
 			SetMostRecentUsedItems();
 		}
 
+		public void WindowClosing() {
+			engine.ClearActivityIndicators();
+		}
+
 		public void Dispose()
 		{
 			engine?.Dispose();

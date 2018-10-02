@@ -279,6 +279,10 @@ namespace Clip_Manager
 
 				Properties.Settings.Default.Save();
 			}
+
+			if (!e.Cancel) {
+				manager.WindowClosing();
+			}
 		}
 
 		private void RecentMenuItem1_Click(object sender, RoutedEventArgs e) {
