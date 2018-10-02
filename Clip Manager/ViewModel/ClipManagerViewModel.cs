@@ -50,6 +50,7 @@ namespace Clip_Manager.ViewModel
 
 		public string FileName { get => engine.ClipListFileName; }
 		public bool IsDirty { get => engine.ClipListIsDirty; }
+		public string OutputDeviceProductGuid { get => engine.OutputDeviceProductGuid; }
 
 		public ClipManagerViewModel()
 		{
@@ -209,6 +210,10 @@ namespace Clip_Manager.ViewModel
 			using (new WaitCursor()) {
 				engine.LoadRecentlyUsedListFile(index);
 			}
+		}
+
+		public void SaveOutputDeviceProductGuidSetting(string productGuid) {
+			engine.SaveOutputDeviceProductGuidSetting(productGuid);
 		}
 
 		public string GetClipDurationString(int index)

@@ -296,6 +296,12 @@ namespace Clip_Manager
 			manager.LoadRecentlyUsedListFile(9);
 		}
 
+		private void SettingsMenuItem_Click(object sender, RoutedEventArgs e) {
+			var settingsWindow = new SettingsWindow();
+			settingsWindow.DataContext = DataContext;
+			settingsWindow.ShowDialog();
+		}
+
 		/*
         private void OnOpenFileClick(object sender, EventArgs e)
         {

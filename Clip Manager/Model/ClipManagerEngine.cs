@@ -7,7 +7,7 @@ namespace Clip_Manager.Model
 {
 	class ClipManagerEngine : IDisposable
 	{
-		private readonly IWavePlayer outputDevice;
+		private readonly WaveOutEvent outputDevice;
 
 		public const int NUM_CLIPS = 8;
 		public const int NUM_RECENTLY_USEDS = 11; // One more than is displayed in the interface
@@ -17,6 +17,7 @@ namespace Clip_Manager.Model
 		public CachedSoundSampleProvider CurrentlyPlayingSampleProvider = null;
 		private int? startIndexAfterStopping = null;
 		public List<string> RecentlyUsedListFileNames { get; set; }
+		public string OutputDeviceProductGuid { get; set; }
 
 		public string ClipListFileName { get; set; }
 		public bool ClipListIsDirty { get; set; }
@@ -32,9 +33,15 @@ namespace Clip_Manager.Model
 			Clips = new Dictionary<int, CachedSound>(NUM_CLIPS);
 			ClipListFileName = null;
 			ClipListIsDirty = false;
-			outputDevice = new WaveOutEvent();
+			LoadOutputDeviceProductGuidSetting();
+			outputDevice = new WaveOutEvent { DeviceNumber = GetOutputDeviceIndex() };
 			outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
 			LoadRecentlyUsedsFromSettings();
+
+			for (int n = -1; n < WaveOut.DeviceCount; n++) {
+				var caps = WaveOut.GetCapabilities(n);
+				Console.WriteLine($"{n}: {caps.ProductName}, {caps.ProductGuid}, {caps.NameGuid}, {caps.ManufacturerGuid}");
+			}
 		}
 
 		public void SetClip(int index, string fileName)
@@ -184,6 +191,35 @@ namespace Clip_Manager.Model
 			ClipListIsDirty = true;
 			OnClipsChanged();
 			OnClipListChanged();
+		}
+
+		public int GetOutputDeviceIndex() {
+			for (int n = -1; n < WaveOut.DeviceCount; n++) {
+				var caps = WaveOut.GetCapabilities(n);
+				if (OutputDeviceProductGuid == caps.ProductGuid.ToString()) {
+					return n;
+				}
+			}
+
+			return -1;
+		}
+
+		public void LoadOutputDeviceProductGuidSetting() {
+			OutputDeviceProductGuid = Properties.Settings.Default.OutputDeviceProductGuid;
+
+			if (outputDevice != null) {
+				outputDevice.DeviceNumber = GetOutputDeviceIndex();
+			}
+		}
+
+		public void SaveOutputDeviceProductGuidSetting(string productGuid) {
+			OutputDeviceProductGuid = productGuid;
+			Properties.Settings.Default.OutputDeviceProductGuid = productGuid;
+			Properties.Settings.Default.Save();
+
+			if (outputDevice != null) {
+				outputDevice.DeviceNumber = GetOutputDeviceIndex();
+			}
 		}
 
 		public void LoadRecentlyUsedsFromSettings() {

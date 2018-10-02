@@ -154,5 +154,17 @@ namespace Clip_Manager.Properties {
                 this["RecentlyUsedPath10"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string OutputDeviceProductGuid {
+            get {
+                return ((string)(this["OutputDeviceProductGuid"]));
+            }
+            set {
+                this["OutputDeviceProductGuid"] = value;
+            }
+        }
     }
 }

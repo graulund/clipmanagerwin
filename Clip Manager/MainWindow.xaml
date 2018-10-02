@@ -140,6 +140,12 @@
 					x:Name="exit"
 					Click="exit_Click" />
 			</MenuItem>
+			<MenuItem Header="_Tools">
+				<MenuItem
+					Header="_Settings"
+					x:Name="SettingsMenuItem"
+					Click="SettingsMenuItem_Click" />
+			</MenuItem>
 		</Menu>
 		<Grid>
 			<Grid.ColumnDefinitions>
