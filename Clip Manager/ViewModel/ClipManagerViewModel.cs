@@ -106,7 +106,7 @@ namespace Clip_Manager.ViewModel
 
 			for (var i = 0; i < MAX_CLIPS; i++)
 			{
-				if (clips.Count > i + 1)
+				if (clips.Count > i)
 				{
 					clips[i] = TransformClip(clips[i], engine.Clips.ContainsKey(i) ? engine.Clips[i] : null, i);
 				}
