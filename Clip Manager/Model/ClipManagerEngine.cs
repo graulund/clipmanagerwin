@@ -69,6 +69,10 @@ namespace Clip_Manager.Model
 				Clips = new Dictionary<int, CachedSound>(NUM_CLIPS);
 			}
 
+			if (Clips.ContainsKey(index)) {
+				Clips.Remove(index);
+			}
+
 			Clips.Add(index, clip);
 			ClipListIsDirty = true;
 			OnClipsChanged();
