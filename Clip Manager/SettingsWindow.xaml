@@ -5,11 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Clip_Manager"
         mc:Ignorable="d"
-        Title="Settings" Height="130" Width="500" ResizeMode="NoResize"
+        Title="Settings" Height="162.526" Width="500" ResizeMode="NoResize"
 		Loaded="Window_Loaded">
-    <Grid>
+	<Grid>
 		<Label
-			x:Name="label"
+			x:Name="soundDeviceLabel"
 			Content="Output Sound Device:"
 			HorizontalAlignment="Left"
 			Margin="20,20,0,0"
@@ -19,12 +19,13 @@
 			HorizontalAlignment="Left"
 			Margin="155,23,0,0"
 			VerticalAlignment="Top"
-			Width="314" />
+			Width="314"
+			SelectionChanged="SoundDeviceComboBox_SelectionChanged"/>
 		<Button
 			x:Name="saveButton"
 			Content="Save"
 			HorizontalAlignment="Left"
-			Margin="301,63,0,0"
+			Margin="301,99,0,0"
 			VerticalAlignment="Top"
 			Width="75"
 			Click="saveButton_Click" />
@@ -32,9 +33,21 @@
 			x:Name="cancelButton"
 			Content="Cancel"
 			HorizontalAlignment="Left"
-			Margin="394,63,0,0"
+			Margin="394,99,0,0"
 			VerticalAlignment="Top"
 			Width="75"
 			Click="cancelButton_Click" />
+		<Label
+			x:Name="channelLabel"
+			Content="Output Channels:"
+			HorizontalAlignment="Left"
+			Margin="20,59,0,0"
+			VerticalAlignment="Top" />
+		<ComboBox
+			x:Name="channelComboBox"
+			HorizontalAlignment="Left"
+			Margin="155,62,0,0"
+			VerticalAlignment="Top"
+			Width="314" />
 	</Grid>
 </Window>

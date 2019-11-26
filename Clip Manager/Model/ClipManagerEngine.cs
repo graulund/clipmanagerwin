@@ -21,6 +21,7 @@ namespace Clip_Manager.Model
 		private int? startIndexAfterStopping = null;
 
 		public string OutputDeviceProductGuid { get; set; }
+		public int OutputDeviceChannelOffset { get; set; }
 		public List<MidiIn> MidiIns { get; set; }
 		public List<MidiOut> MidiOuts { get; set; }
 
@@ -41,6 +42,7 @@ namespace Clip_Manager.Model
 			ClipListIsDirty = false;
 
 			LoadOutputDeviceProductGuidSetting();
+			LoadOutputDeviceChannelOffsetSetting();
 			outputDevice = new WaveOutEvent { DeviceNumber = GetOutputDeviceIndex() };
 			outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
 
@@ -225,6 +227,18 @@ namespace Clip_Manager.Model
 			if (outputDevice != null) {
 				outputDevice.DeviceNumber = GetOutputDeviceIndex();
 			}
+		}
+
+		public void LoadOutputDeviceChannelOffsetSetting()
+		{
+			OutputDeviceChannelOffset = Properties.Settings.Default.OutputDeviceChannelOffset;
+		}
+
+		public void SaveOutputDeviceChannelOffsetSetting(int channelOffset)
+		{
+			OutputDeviceChannelOffset = channelOffset;
+			Properties.Settings.Default.OutputDeviceChannelOffset = channelOffset;
+			Properties.Settings.Default.Save();
 		}
 
 		public void LoadRecentlyUsedsFromSettings() {
