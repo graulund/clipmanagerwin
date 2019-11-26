@@ -1,0 +1,7 @@
+[*] 
+indent_style = tab
+[*.{cs,csx,vb,vbx}] 
+indent_size = tab
+tab_size = 4
+insert_final_newline = true
+charset = utf-8

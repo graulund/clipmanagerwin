@@ -1,12 +1,12 @@
-﻿using Clip_Manager.Model;
+using Clip_Manager.Model;
 using System;
-using System.Windows.Input;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace Clip_Manager.ViewModel
 {
@@ -43,7 +43,8 @@ namespace Clip_Manager.ViewModel
 		}
 
 		private string _mainWindowTitle;
-		public string MainWindowTitle {
+		public string MainWindowTitle
+		{
 			get => _mainWindowTitle;
 			set => SetProperty(ref _mainWindowTitle, value);
 		}
@@ -72,7 +73,8 @@ namespace Clip_Manager.ViewModel
 		{
 			var isPlaying = engine.CurrentlyPlayingIndex != null && engine.CurrentlyPlayingIndex.Value == index;
 
-			if (existingClipVM != null) {
+			if (existingClipVM != null)
+			{
 				existingClipVM.Number = 1 + index;
 				existingClipVM.HasValue = clip != null;
 				existingClipVM.FileName = clip != null ? Path.GetFileName(clip.FileName) : null;
@@ -120,8 +122,10 @@ namespace Clip_Manager.ViewModel
 			Clips = clips;
 		}
 
-		public void SetMainWindowTitle() {
-			if (engine.ClipListFileName != null) {
+		public void SetMainWindowTitle()
+		{
+			if (engine.ClipListFileName != null)
+			{
 				MainWindowTitle = string.Format(
 					"{0}{1} — Clips",
 					Path.GetFileName(engine.ClipListFileName),
@@ -129,27 +133,34 @@ namespace Clip_Manager.ViewModel
 				);
 			}
 
-			else {
+			else
+			{
 				MainWindowTitle = "Clips";
 			}
 		}
 
-		public void SetMostRecentUsedItems() {
-			try {
+		public void SetMostRecentUsedItems()
+		{
+			try
+			{
 				RecentMenuSeparator.Visibility =
 					engine.RecentlyUsedListFileNames.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-				for (var i = 0; i < NUM_RECENT_MENU_ITEMS; i++) {
-					if (RecentMenuItems.Count > i) {
+				for (var i = 0; i < NUM_RECENT_MENU_ITEMS; i++)
+				{
+					if (RecentMenuItems.Count > i)
+					{
 						var menuItem = RecentMenuItems[i];
-						if (engine.RecentlyUsedListFileNames.Count > i) {
+						if (engine.RecentlyUsedListFileNames.Count > i)
+						{
 							var fileName = engine.RecentlyUsedListFileNames[i];
 							var trimmedFileName = fileName.Substring(
 								Math.Max(0, fileName.Length - RECENT_ITEM_MAX_LENGTH),
 								Math.Min(RECENT_ITEM_MAX_LENGTH, fileName.Length)
 							);
 
-							if (trimmedFileName.Length != fileName.Length) {
+							if (trimmedFileName.Length != fileName.Length)
+							{
 								trimmedFileName = string.Format("…{0}", trimmedFileName);
 							}
 
@@ -157,13 +168,15 @@ namespace Clip_Manager.ViewModel
 							menuItem.Visibility = Visibility.Visible;
 						}
 
-						else {
+						else
+						{
 							menuItem.Visibility = Visibility.Collapsed;
 						}
 					}
 				}
 			}
-			catch (Exception) {
+			catch (Exception)
+			{
 				// Nothing. This is not critical functionality.
 			}
 		}
@@ -184,35 +197,45 @@ namespace Clip_Manager.ViewModel
 			catch (Exception) { }
 		}
 
-		public void LoadClipsFromFile(string fileName) {
-			using (new WaitCursor()) {
+		public void LoadClipsFromFile(string fileName)
+		{
+			using (new WaitCursor())
+			{
 				engine.LoadClipsFromFile(fileName);
 			}
 		}
 
-		public void SaveClipsToFile(string fileName) {
-			using (new WaitCursor()) {
+		public void SaveClipsToFile(string fileName)
+		{
+			using (new WaitCursor())
+			{
 				engine.SaveClipsToFile(fileName);
 			}
 		}
 
-		public void LoadClipsFromDirectory(string directoryName) {
-			using (new WaitCursor()) {
+		public void LoadClipsFromDirectory(string directoryName)
+		{
+			using (new WaitCursor())
+			{
 				engine.LoadClipsFromDirectory(directoryName);
 			}
 		}
 
-		public void ClearClips() {
+		public void ClearClips()
+		{
 			engine.ClearClips();
 		}
 
-		public void LoadRecentlyUsedListFile(int index) {
-			using (new WaitCursor()) {
+		public void LoadRecentlyUsedListFile(int index)
+		{
+			using (new WaitCursor())
+			{
 				engine.LoadRecentlyUsedListFile(index);
 			}
 		}
 
-		public void SaveOutputDeviceProductGuidSetting(string productGuid) {
+		public void SaveOutputDeviceProductGuidSetting(string productGuid)
+		{
 			engine.SaveOutputDeviceProductGuidSetting(productGuid);
 		}
 
@@ -299,15 +322,18 @@ namespace Clip_Manager.ViewModel
 			clipVM.TimeString = GetClipDurationString(index);
 		}
 
-		private void Engine_ClipListChanged(object sender, EventArgs e) {
+		private void Engine_ClipListChanged(object sender, EventArgs e)
+		{
 			SetMainWindowTitle();
 		}
 
-		private void Engine_RecentlyUsedsChanged(object sender, EventArgs e) {
+		private void Engine_RecentlyUsedsChanged(object sender, EventArgs e)
+		{
 			SetMostRecentUsedItems();
 		}
 
-		public void WindowClosing() {
+		public void WindowClosing()
+		{
 			engine.ClearActivityIndicators();
 		}
 
@@ -318,10 +344,12 @@ namespace Clip_Manager.ViewModel
 		}
 	}
 
-	public class WaitCursor : IDisposable {
+	public class WaitCursor : IDisposable
+	{
 		private Cursor _previousCursor;
 
-		public WaitCursor() {
+		public WaitCursor()
+		{
 			_previousCursor = Mouse.OverrideCursor;
 
 			Mouse.OverrideCursor = Cursors.Wait;
@@ -329,7 +357,8 @@ namespace Clip_Manager.ViewModel
 
 		#region IDisposable Members
 
-		public void Dispose() {
+		public void Dispose()
+		{
 			Mouse.OverrideCursor = _previousCursor;
 		}
 

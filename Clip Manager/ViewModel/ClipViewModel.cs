@@ -1,5 +1,3 @@
-﻿using System;
-
 namespace Clip_Manager.ViewModel
 {
 	public class ClipViewModel : ViewModelBase
