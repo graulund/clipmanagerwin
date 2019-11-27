@@ -9,6 +9,7 @@ namespace Clip_Manager.Model
 	class ClipManagerEngine : IDisposable
 	{
 		private AsioOut outputDevice;
+		private bool outputDeviceDirty;
 
 		public const int NUM_CLIPS = 8;
 		public const int NUM_RECENTLY_USEDS = 11; // One more than is displayed in the interface
@@ -41,6 +42,7 @@ namespace Clip_Manager.Model
 			ClipListFileName = null;
 			ClipListIsDirty = false;
 
+			outputDeviceDirty = false;
 			LoadOutputDeviceProductGuidSetting();
 			LoadOutputDeviceChannelOffsetSetting();
 			SetOutputDevice();
@@ -57,7 +59,13 @@ namespace Clip_Manager.Model
 
 			Console.WriteLine("Setting output device");
 
+
 			if (outputDevice != null) {
+				if (!outputDeviceDirty && outputDevice.DriverName == OutputDeviceProductGuid) {
+					Console.WriteLine("No need to reset output device");
+					return;
+				}
+
 				outputDevice.Stop();
 				outputDevice.Dispose();
 			}
@@ -68,6 +76,7 @@ namespace Clip_Manager.Model
 				outputDevice = new AsioOut(OutputDeviceProductGuid);
 				outputDevice.ChannelOffset = OutputDeviceChannelOffset;
 				outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
+				outputDeviceDirty = false;
 			}
 			catch (Exception e) {
 				Console.WriteLine("Exception occurred creating output device: {0}", e.Message);
@@ -136,6 +145,7 @@ namespace Clip_Manager.Model
 					return;
 				}
 
+				outputDeviceDirty = true;
 				outputDevice.Init(sampleProvider);
 				outputDevice.Play();
 				Console.WriteLine("Setting currently playing to be index {0}", index);
@@ -169,6 +179,11 @@ namespace Clip_Manager.Model
 		public void Stop()
 		{
 			Console.WriteLine("Stopping clip");
+
+			if (outputDevice != null && !outputDeviceDirty) {
+				return;
+			}
+
 			outputDevice?.Stop();
 		}
 
@@ -465,6 +480,7 @@ namespace Clip_Manager.Model
 
 		public void Dispose()
 		{
+			outputDeviceDirty = true;
 			outputDevice.Dispose();
 			DisposeMidiDevices();
 		}
