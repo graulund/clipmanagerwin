@@ -51,6 +51,7 @@ namespace Clip_Manager.Model
 
 		private void SetOutputDevice() {
 			if (OutputDeviceProductGuid == null || OutputDeviceProductGuid == string.Empty) {
+				Console.WriteLine("Wanted to set output device, but it has no id");
 				return;
 			}
 
@@ -68,8 +69,11 @@ namespace Clip_Manager.Model
 				outputDevice.ChannelOffset = OutputDeviceChannelOffset;
 				outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
 			}
-			catch (Exception)
-			{}
+			catch (Exception e) {
+				Console.WriteLine("Exception occurred creating output device: {0}", e.Message);
+				return;
+			}
+
 		}
 
 		public void SetClip(int index, string fileName)
@@ -126,6 +130,12 @@ namespace Clip_Manager.Model
 				var clip = Clips[index];
 				var sampleProvider = new CachedSoundSampleProvider(clip);
 				SetOutputDevice();
+
+				if (outputDevice == null) {
+					Console.WriteLine("Tried to play index {0}, but output device is null", index);
+					return;
+				}
+
 				outputDevice.Init(sampleProvider);
 				outputDevice.Play();
 				Console.WriteLine("Setting currently playing to be index {0}", index);
@@ -165,7 +175,7 @@ namespace Clip_Manager.Model
 		public void LoadClipsFromFile(string fileName) {
 			try {
 				Clips = ClipFileHandler.ReadClipsFile(fileName);
-			} 
+			}
 			catch (Exception) {
 				return;
 			}
@@ -248,7 +258,7 @@ namespace Clip_Manager.Model
 			OutputDeviceProductGuid = productGuid;
 			Properties.Settings.Default.OutputDeviceProductGuid = productGuid;
 			Properties.Settings.Default.Save();
-			
+
 			if (outputDevice != null && outputDevice.DriverName != OutputDeviceProductGuid)
 			{
 				SetOutputDevice();
