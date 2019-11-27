@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using NAudio.Midi;
 using NAudio.Wave;
 
@@ -10,6 +11,8 @@ namespace Clip_Manager.Model
 	{
 		private AsioOut outputDevice;
 		private bool outputDeviceDirty;
+		private readonly SynchronizationContext mainThread;
+		private System.Timers.Timer timer;
 
 		public const int NUM_CLIPS = 8;
 		public const int NUM_RECENTLY_USEDS = 11; // One more than is displayed in the interface
@@ -38,10 +41,14 @@ namespace Clip_Manager.Model
 
 		public ClipManagerEngine()
 		{
+			mainThread = SynchronizationContext.Current;
+
 			Clips = new Dictionary<int, CachedSound>(NUM_CLIPS);
 			ClipListFileName = null;
 			ClipListIsDirty = false;
 
+			timer = new System.Timers.Timer(20);
+			timer.Elapsed += Timer_Elapsed;
 			outputDeviceDirty = false;
 			LoadOutputDeviceProductGuidSetting();
 			LoadOutputDeviceChannelOffsetSetting();
@@ -66,8 +73,13 @@ namespace Clip_Manager.Model
 					return;
 				}
 
-				outputDevice.Stop();
+				if (outputDevice.PlaybackState != PlaybackState.Stopped)
+				{
+					outputDevice.Stop();
+				}
+
 				outputDevice.Dispose();
+				outputDevice = null;
 			}
 
 			//outputDevice = new WaveOutEvent { DeviceNumber = GetOutputDeviceIndex() };
@@ -151,6 +163,7 @@ namespace Clip_Manager.Model
 				Console.WriteLine("Setting currently playing to be index {0}", index);
 				if (outputDevice.PlaybackState == PlaybackState.Playing)
 				{
+					timer.Start();
 					CurrentlyPlayingIndex = index;
 					CurrentlyPlayingClip = clip;
 					CurrentlyPlayingSampleProvider = sampleProvider;
@@ -179,6 +192,7 @@ namespace Clip_Manager.Model
 		public void Stop()
 		{
 			Console.WriteLine("Stopping clip");
+			timer.Stop();
 
 			if (outputDevice != null && !outputDeviceDirty) {
 				return;
@@ -380,11 +394,20 @@ namespace Clip_Manager.Model
 			var evt = e.MidiEvent;
 
 			if (MidiEvent.IsNoteOn(evt)) {
-				OnNoteOn(((NoteEvent)evt).NoteNumber);
+				mainThread.Post(o => OnNoteOn(((NoteEvent)evt).NoteNumber), null);
 			}
 
 			else if (MidiEvent.IsNoteOff(evt)) {
-				OnNoteOff(((NoteEvent)evt).NoteNumber);
+				mainThread.Post(o => OnNoteOff(((NoteEvent)evt).NoteNumber), null);
+			}
+		}
+
+		private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+		{
+			if (timer.Enabled && outputDevice != null && outputDevice.HasReachedEnd)
+			{
+				timer.Stop();
+				outputDevice.Stop();
 			}
 		}
 
