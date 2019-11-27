@@ -8,7 +8,7 @@ namespace Clip_Manager.Model
 {
 	class ClipManagerEngine : IDisposable
 	{
-		private readonly WaveOutEvent outputDevice;
+		private AsioOut outputDevice;
 
 		public const int NUM_CLIPS = 8;
 		public const int NUM_RECENTLY_USEDS = 11; // One more than is displayed in the interface
@@ -43,11 +43,33 @@ namespace Clip_Manager.Model
 
 			LoadOutputDeviceProductGuidSetting();
 			LoadOutputDeviceChannelOffsetSetting();
-			outputDevice = new WaveOutEvent { DeviceNumber = GetOutputDeviceIndex() };
-			outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
+			SetOutputDevice();
 
 			LoadMidiDevices();
 			LoadRecentlyUsedsFromSettings();
+		}
+
+		private void SetOutputDevice() {
+			if (OutputDeviceProductGuid == null || OutputDeviceProductGuid == string.Empty) {
+				return;
+			}
+
+			Console.WriteLine("Setting output device");
+
+			if (outputDevice != null) {
+				outputDevice.Stop();
+				outputDevice.Dispose();
+			}
+
+			//outputDevice = new WaveOutEvent { DeviceNumber = GetOutputDeviceIndex() };
+			try
+			{
+				outputDevice = new AsioOut(OutputDeviceProductGuid);
+				outputDevice.ChannelOffset = OutputDeviceChannelOffset;
+				outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
+			}
+			catch (Exception)
+			{}
 		}
 
 		public void SetClip(int index, string fileName)
@@ -103,6 +125,7 @@ namespace Clip_Manager.Model
 
 				var clip = Clips[index];
 				var sampleProvider = new CachedSoundSampleProvider(clip);
+				SetOutputDevice();
 				outputDevice.Init(sampleProvider);
 				outputDevice.Play();
 				Console.WriteLine("Setting currently playing to be index {0}", index);
@@ -135,6 +158,7 @@ namespace Clip_Manager.Model
 
 		public void Stop()
 		{
+			Console.WriteLine("Stopping clip");
 			outputDevice?.Stop();
 		}
 
@@ -214,8 +238,9 @@ namespace Clip_Manager.Model
 		public void LoadOutputDeviceProductGuidSetting() {
 			OutputDeviceProductGuid = Properties.Settings.Default.OutputDeviceProductGuid;
 
-			if (outputDevice != null) {
-				outputDevice.DeviceNumber = GetOutputDeviceIndex();
+			if (outputDevice != null && outputDevice.DriverName != OutputDeviceProductGuid)
+			{
+				SetOutputDevice();
 			}
 		}
 
@@ -223,9 +248,10 @@ namespace Clip_Manager.Model
 			OutputDeviceProductGuid = productGuid;
 			Properties.Settings.Default.OutputDeviceProductGuid = productGuid;
 			Properties.Settings.Default.Save();
-
-			if (outputDevice != null) {
-				outputDevice.DeviceNumber = GetOutputDeviceIndex();
+			
+			if (outputDevice != null && outputDevice.DriverName != OutputDeviceProductGuid)
+			{
+				SetOutputDevice();
 			}
 		}
 
@@ -289,6 +315,7 @@ namespace Clip_Manager.Model
 
 		private void OutputDevice_PlaybackStopped(object sender, StoppedEventArgs e)
 		{
+			Console.WriteLine("Playback stopped");
 			var playedIndex = CurrentlyPlayingIndex;
 
 			CurrentlyPlayingIndex = null;
