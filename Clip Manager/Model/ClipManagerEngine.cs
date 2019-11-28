@@ -158,20 +158,28 @@ namespace Clip_Manager.Model
 				}
 
 				outputDeviceDirty = true;
-				outputDevice.Init(sampleProvider);
-				outputDevice.Play();
-				Console.WriteLine("Setting currently playing to be index {0}", index);
-				if (outputDevice.PlaybackState == PlaybackState.Playing)
-				{
-					timer.Start();
-					CurrentlyPlayingIndex = index;
-					CurrentlyPlayingClip = clip;
-					CurrentlyPlayingSampleProvider = sampleProvider;
-					UpdateActivityIndicator(index);
-					OnClipStartedPlaying(index);
+
+				try {
+					outputDevice.Init(sampleProvider);
+					outputDevice.Play();
+					Console.WriteLine("Setting currently playing to be index {0}", index);
+					if (outputDevice.PlaybackState == PlaybackState.Playing)
+					{
+						timer.Start();
+						CurrentlyPlayingIndex = index;
+						CurrentlyPlayingClip = clip;
+						CurrentlyPlayingSampleProvider = sampleProvider;
+						UpdateActivityIndicator(index);
+						OnClipStartedPlaying(index);
+					}
+				}
+				catch (Exception e) {
+					Console.WriteLine(
+						"Tried to play index {0}, but an exception occurred: {1}",
+						index, e.Message
+					);
 				}
 			}
-
 			else
 			{
 				Console.WriteLine("Tried to play index {0}, but no such clip exists", index);
