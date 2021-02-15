@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 
 namespace Clip_Manager.Model
 {
 	public class CachedSound
 	{
 		const int CLIP_MAX_MINUTES = 7;
+		const int DESIRED_SAMPLE_RATE = 44100;
 
 		public byte[] AudioData { get; }
 		public WaveFormat WaveFormat { get; }
@@ -22,14 +24,22 @@ namespace Clip_Manager.Model
 					throw new OutOfMemoryException("Audio file too long");
 				}
 
-				WaveFormat = audioFileReader.WaveFormat;
+				IWaveProvider source = audioFileReader;
+
+				if (audioFileReader.WaveFormat.SampleRate != DESIRED_SAMPLE_RATE)
+				{
+					// Resample to desired sample rate
+					source = new SampleToWaveProvider16(new WdlResamplingSampleProvider(audioFileReader, DESIRED_SAMPLE_RATE));
+				}
+
+				WaveFormat = source.WaveFormat;
 				FileName = audioFileName;
 				TotalTime = audioFileReader.TotalTime;
 				var wholeFile = new List<byte>((int)(audioFileReader.Length / 4));
-				var readBuffer = new byte[audioFileReader.WaveFormat.SampleRate * audioFileReader.WaveFormat.Channels];
+				var readBuffer = new byte[DESIRED_SAMPLE_RATE * source.WaveFormat.Channels];
 				int samplesRead;
 
-				while ((samplesRead = audioFileReader.Read(readBuffer, 0, readBuffer.Length)) > 0)
+				while ((samplesRead = source.Read(readBuffer, 0, readBuffer.Length)) > 0)
 				{
 					wholeFile.AddRange(readBuffer.Take(samplesRead));
 				}

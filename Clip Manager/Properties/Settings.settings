@@ -50,5 +50,8 @@
     <Setting Name="MainWindowHeight" Type="System.Double" Scope="User">
       <Value Profile="(Default)">200</Value>
     </Setting>
+    <Setting Name="OutputDeviceChannelOffset" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
