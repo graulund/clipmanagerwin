@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using NAudio.Midi;
 using NAudio.Wave;
 
@@ -8,7 +9,10 @@ namespace Clip_Manager.Model
 {
 	class ClipManagerEngine : IDisposable
 	{
-		private readonly WaveOutEvent outputDevice;
+		private AsioOut outputDevice;
+		private bool outputDeviceDirty;
+		private readonly SynchronizationContext mainThread;
+		private System.Timers.Timer timer;
 
 		public const int NUM_CLIPS = 8;
 		public const int NUM_RECENTLY_USEDS = 11; // One more than is displayed in the interface
@@ -21,6 +25,7 @@ namespace Clip_Manager.Model
 		private int? startIndexAfterStopping = null;
 
 		public string OutputDeviceProductGuid { get; set; }
+		public int OutputDeviceChannelOffset { get; set; }
 		public List<MidiIn> MidiIns { get; set; }
 		public List<MidiOut> MidiOuts { get; set; }
 
@@ -36,16 +41,60 @@ namespace Clip_Manager.Model
 
 		public ClipManagerEngine()
 		{
+			mainThread = SynchronizationContext.Current;
+
 			Clips = new Dictionary<int, CachedSound>(NUM_CLIPS);
 			ClipListFileName = null;
 			ClipListIsDirty = false;
 
+			timer = new System.Timers.Timer(20);
+			timer.Elapsed += Timer_Elapsed;
+			outputDeviceDirty = false;
 			LoadOutputDeviceProductGuidSetting();
-			outputDevice = new WaveOutEvent { DeviceNumber = GetOutputDeviceIndex() };
-			outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
+			LoadOutputDeviceChannelOffsetSetting();
+			SetOutputDevice();
 
 			LoadMidiDevices();
 			LoadRecentlyUsedsFromSettings();
+		}
+
+		private void SetOutputDevice() {
+			if (OutputDeviceProductGuid == null || OutputDeviceProductGuid == string.Empty) {
+				Console.WriteLine("Wanted to set output device, but it has no id");
+				return;
+			}
+
+			Console.WriteLine("Setting output device");
+
+
+			if (outputDevice != null) {
+				if (!outputDeviceDirty && outputDevice.DriverName == OutputDeviceProductGuid) {
+					Console.WriteLine("No need to reset output device");
+					return;
+				}
+
+				if (outputDevice.PlaybackState != PlaybackState.Stopped)
+				{
+					outputDevice.Stop();
+				}
+
+				outputDevice.Dispose();
+				outputDevice = null;
+			}
+
+			//outputDevice = new WaveOutEvent { DeviceNumber = GetOutputDeviceIndex() };
+			try
+			{
+				outputDevice = new AsioOut(OutputDeviceProductGuid);
+				outputDevice.ChannelOffset = OutputDeviceChannelOffset;
+				outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
+				outputDeviceDirty = false;
+			}
+			catch (Exception e) {
+				Console.WriteLine("Exception occurred creating output device: {0}", e.Message);
+				return;
+			}
+
 		}
 
 		public void SetClip(int index, string fileName)
@@ -101,19 +150,36 @@ namespace Clip_Manager.Model
 
 				var clip = Clips[index];
 				var sampleProvider = new CachedSoundSampleProvider(clip);
-				outputDevice.Init(sampleProvider);
-				outputDevice.Play();
-				Console.WriteLine("Setting currently playing to be index {0}", index);
-				if (outputDevice.PlaybackState == PlaybackState.Playing)
-				{
-					CurrentlyPlayingIndex = index;
-					CurrentlyPlayingClip = clip;
-					CurrentlyPlayingSampleProvider = sampleProvider;
-					UpdateActivityIndicator(index);
-					OnClipStartedPlaying(index);
+				SetOutputDevice();
+
+				if (outputDevice == null) {
+					Console.WriteLine("Tried to play index {0}, but output device is null", index);
+					return;
+				}
+
+				outputDeviceDirty = true;
+
+				try {
+					outputDevice.Init(sampleProvider);
+					outputDevice.Play();
+					Console.WriteLine("Setting currently playing to be index {0}", index);
+					if (outputDevice.PlaybackState == PlaybackState.Playing)
+					{
+						timer.Start();
+						CurrentlyPlayingIndex = index;
+						CurrentlyPlayingClip = clip;
+						CurrentlyPlayingSampleProvider = sampleProvider;
+						UpdateActivityIndicator(index);
+						OnClipStartedPlaying(index);
+					}
+				}
+				catch (Exception e) {
+					Console.WriteLine(
+						"Tried to play index {0}, but an exception occurred: {1}",
+						index, e.Message
+					);
 				}
 			}
-
 			else
 			{
 				Console.WriteLine("Tried to play index {0}, but no such clip exists", index);
@@ -133,13 +199,20 @@ namespace Clip_Manager.Model
 
 		public void Stop()
 		{
+			Console.WriteLine("Stopping clip");
+			timer.Stop();
+
+			if (outputDevice != null && !outputDeviceDirty) {
+				return;
+			}
+
 			outputDevice?.Stop();
 		}
 
 		public void LoadClipsFromFile(string fileName) {
 			try {
 				Clips = ClipFileHandler.ReadClipsFile(fileName);
-			} 
+			}
 			catch (Exception) {
 				return;
 			}
@@ -212,8 +285,9 @@ namespace Clip_Manager.Model
 		public void LoadOutputDeviceProductGuidSetting() {
 			OutputDeviceProductGuid = Properties.Settings.Default.OutputDeviceProductGuid;
 
-			if (outputDevice != null) {
-				outputDevice.DeviceNumber = GetOutputDeviceIndex();
+			if (outputDevice != null && outputDevice.DriverName != OutputDeviceProductGuid)
+			{
+				SetOutputDevice();
 			}
 		}
 
@@ -222,9 +296,22 @@ namespace Clip_Manager.Model
 			Properties.Settings.Default.OutputDeviceProductGuid = productGuid;
 			Properties.Settings.Default.Save();
 
-			if (outputDevice != null) {
-				outputDevice.DeviceNumber = GetOutputDeviceIndex();
+			if (outputDevice != null && outputDevice.DriverName != OutputDeviceProductGuid)
+			{
+				SetOutputDevice();
 			}
+		}
+
+		public void LoadOutputDeviceChannelOffsetSetting()
+		{
+			OutputDeviceChannelOffset = Properties.Settings.Default.OutputDeviceChannelOffset;
+		}
+
+		public void SaveOutputDeviceChannelOffsetSetting(int channelOffset)
+		{
+			OutputDeviceChannelOffset = channelOffset;
+			Properties.Settings.Default.OutputDeviceChannelOffset = channelOffset;
+			Properties.Settings.Default.Save();
 		}
 
 		public void LoadRecentlyUsedsFromSettings() {
@@ -275,6 +362,7 @@ namespace Clip_Manager.Model
 
 		private void OutputDevice_PlaybackStopped(object sender, StoppedEventArgs e)
 		{
+			Console.WriteLine("Playback stopped");
 			var playedIndex = CurrentlyPlayingIndex;
 
 			CurrentlyPlayingIndex = null;
@@ -314,11 +402,20 @@ namespace Clip_Manager.Model
 			var evt = e.MidiEvent;
 
 			if (MidiEvent.IsNoteOn(evt)) {
-				OnNoteOn(((NoteEvent)evt).NoteNumber);
+				mainThread.Post(o => OnNoteOn(((NoteEvent)evt).NoteNumber), null);
 			}
 
 			else if (MidiEvent.IsNoteOff(evt)) {
-				OnNoteOff(((NoteEvent)evt).NoteNumber);
+				mainThread.Post(o => OnNoteOff(((NoteEvent)evt).NoteNumber), null);
+			}
+		}
+
+		private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+		{
+			if (timer.Enabled && outputDevice != null && outputDevice.HasReachedEnd)
+			{
+				timer.Stop();
+				outputDevice.Stop();
 			}
 		}
 
@@ -414,6 +511,7 @@ namespace Clip_Manager.Model
 
 		public void Dispose()
 		{
+			outputDeviceDirty = true;
 			outputDevice.Dispose();
 			DisposeMidiDevices();
 		}

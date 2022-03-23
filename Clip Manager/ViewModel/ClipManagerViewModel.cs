@@ -52,6 +52,7 @@ namespace Clip_Manager.ViewModel
 		public string FileName { get => engine.ClipListFileName; }
 		public bool IsDirty { get => engine.ClipListIsDirty; }
 		public string OutputDeviceProductGuid { get => engine.OutputDeviceProductGuid; }
+		public int OutputDeviceChannelOffset { get => engine.OutputDeviceChannelOffset; }
 
 		public ClipManagerViewModel()
 		{
@@ -237,6 +238,11 @@ namespace Clip_Manager.ViewModel
 		public void SaveOutputDeviceProductGuidSetting(string productGuid)
 		{
 			engine.SaveOutputDeviceProductGuidSetting(productGuid);
+		}
+
+		public void SaveOutputDeviceChannelOffsetSetting(int channelOffset)
+		{
+			engine.SaveOutputDeviceChannelOffsetSetting(channelOffset);
 		}
 
 		public string GetClipDurationString(int index)
